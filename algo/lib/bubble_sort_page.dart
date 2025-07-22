@@ -31,6 +31,9 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   double speed = 1.0; // Speed multiplier (0.5 = slow, 1.0 = normal, 2.0 = fast)
   bool shouldStop = false; // Flag to stop sorting
 
+  // Code highlighting variables
+  int highlightedLine = -1; // -1 means no highlight, 0-5 for different lines
+
   late AnimationController _animationController;
   late Animation<double> _swapAnimation;
 
@@ -63,6 +66,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       isSorting = false;
       isSorted = false;
       shouldStop = false;
+      highlightedLine = -1;
       currentStep = "Ready to start sorting";
       operationIndicator = "";
       totalComparisons = 0;
@@ -74,6 +78,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     setState(() {
       shouldStop = true;
       isSorting = false;
+      highlightedLine = -1;
       currentStep = "Sorting stopped by user";
       operationIndicator = "⏹️ Sorting process halted";
     });
@@ -108,6 +113,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       isSorting = false;
       isSorted = false;
       shouldStop = false;
+      highlightedLine = -1;
       currentStep = isAscending
           ? "Array shuffled - Ready to start sorting (Ascending)"
           : "Array shuffled - Ready to start sorting (Descending)";
@@ -127,16 +133,24 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       totalComparisons = 0;
       totalSwaps = 0;
       operationIndicator = "";
+      highlightedLine = 0; // Highlight function declaration
     });
 
     int n = numbers.length;
     String orderText = isAscending ? "ascending" : "descending";
+
+    // Highlight outer loop
+    setState(() {
+      highlightedLine = 1; // Outer for loop
+    });
+    await Future.delayed(Duration(milliseconds: (500 / speed).round()));
 
     for (int i = 0; i < n - 1; i++) {
       if (shouldStop) break;
 
       setState(() {
         currentI = i;
+        highlightedLine = 1; // Keep highlighting outer loop
         currentStep =
             "Pass ${i + 1}: Finding the ${isAscending ? 'largest' : 'smallest'} element in remaining array";
         operationIndicator =
@@ -146,6 +160,12 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       await Future.delayed(Duration(milliseconds: (500 / speed).round()));
       if (shouldStop) break;
 
+      // Highlight inner loop
+      setState(() {
+        highlightedLine = 2; // Inner for loop
+      });
+      await Future.delayed(Duration(milliseconds: (300 / speed).round()));
+
       for (int j = 0; j < n - i - 1; j++) {
         if (shouldStop) break;
 
@@ -153,6 +173,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           currentJ = j;
           comparingIndex1 = j;
           comparingIndex2 = j + 1;
+          highlightedLine = 3; // Comparison line
           currentStep = "Comparing ${numbers[j]} and ${numbers[j + 1]}";
           operationIndicator =
               "🔍 Comparing: ${numbers[j]} vs ${numbers[j + 1]}";
@@ -170,6 +191,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         if (shouldSwap) {
           setState(() {
             isSwapping = true;
+            highlightedLine = 4; // Swap block
             currentStep = "Swapping ${numbers[j]} and ${numbers[j + 1]}";
             operationIndicator =
                 "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
@@ -205,6 +227,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       if (shouldStop) break;
 
       setState(() {
+        highlightedLine = 5; // End of pass
         currentStep =
             "Pass ${i + 1} completed - ${numbers[n - i - 1]} is in correct position";
         operationIndicator =
@@ -219,12 +242,14 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       comparingIndex1 = -1;
       comparingIndex2 = -1;
       isSorting = false;
+      highlightedLine = -1; // Clear highlight
 
       if (shouldStop) {
         currentStep = "Sorting stopped by user";
         operationIndicator = "⏹️ Sorting was interrupted";
       } else {
         isSorted = true;
+        highlightedLine = 6; // Completed state
         currentStep =
             "Sorting completed! Array is now sorted in $orderText order.";
         operationIndicator =
@@ -247,6 +272,172 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     return Colors.blue;
   }
 
+  Widget _buildCodeDisplay() {
+    List<Map<String, dynamic>> codeLines = [
+      {
+        'line': 0,
+        'text': 'void bubbleSort(List<int> arr, bool ascending) {',
+        'indent': 0,
+      },
+      {'line': 1, 'text': 'for (int i = 0; i < n - 1; i++) {', 'indent': 1},
+      {'line': 2, 'text': 'for (int j = 0; j < n - i - 1; j++) {', 'indent': 2},
+      {
+        'line': 3,
+        'text': 'if (arr[j] ${isAscending ? '>' : '<'} arr[j + 1]) {',
+        'indent': 3,
+      },
+      {'line': 4, 'text': '    swap(arr[j], arr[j + 1]);', 'indent': 3},
+      {'line': 5, 'text': '}', 'indent': 2},
+      {'line': 6, 'text': 'Sorting Complete!', 'indent': 0},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E), // VS Code dark theme
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade600),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // VS Code-like header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D2D30),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.orange,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Text(
+                  'BubbleSort.dart',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Code content
+          Container(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: codeLines.map((codeLine) {
+                if (codeLine['line'] == 6 && !isSorted) {
+                  return const SizedBox.shrink(); // Don't show completion line until sorted
+                }
+
+                bool isHighlighted = highlightedLine == codeLine['line'];
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 2,
+                    horizontal: 4,
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 1),
+                  decoration: BoxDecoration(
+                    color: isHighlighted
+                        ? const Color(0xFF264F78).withOpacity(
+                            0.8,
+                          ) // VS Code highlight blue
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(3),
+                    border: isHighlighted
+                        ? Border.all(color: const Color(0xFF0E639C), width: 1)
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      // Line number
+                      SizedBox(
+                        width: 24,
+                        child: Text(
+                          '${codeLine['line'] + 1}',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Indentation
+                      SizedBox(width: codeLine['indent'] * 16.0),
+                      // Code text
+                      Expanded(
+                        child: Text(
+                          codeLine['text'],
+                          style: TextStyle(
+                            color: isHighlighted
+                                ? Colors.white
+                                : _getCodeTextColor(codeLine['text']),
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                            fontWeight: isHighlighted
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getCodeTextColor(String text) {
+    if (text.contains('void') || text.contains('for') || text.contains('if')) {
+      return const Color(0xFF569CD6); // VS Code keyword blue
+    } else if (text.contains('arr[') || text.contains('swap')) {
+      return const Color(0xFFDCDCAA); // VS Code variable yellow
+    } else if (text.contains('}')) {
+      return const Color(0xFF808080); // VS Code bracket gray
+    } else if (text.contains('Sorting Complete!')) {
+      return const Color(0xFF4EC9B0); // VS Code string teal
+    }
+    return Colors.white; // Default white
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,7 +450,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         children: [
           // Animation Area (Top portion)
           Expanded(
-            flex: 5,
+            flex: 4,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -486,13 +677,27 @@ class _BubbleSortPageState extends State<BubbleSortPage>
 
           // Information and Controls Area
           Flexible(
-            flex: 5,
+            flex: 6,
             child: Container(
               padding: const EdgeInsets.all(16),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Code Display Section
+                    const Text(
+                      'Algorithm Code:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildCodeDisplay(),
+
+                    const SizedBox(height: 16),
+
                     // Control Buttons
                     Column(
                       children: [
