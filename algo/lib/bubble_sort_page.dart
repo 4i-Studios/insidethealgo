@@ -482,7 +482,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         children: [
           // Animation Area (Top portion)
           Expanded(
-            flex: 4,
+            flex: 3,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -495,63 +495,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               ),
               child: Column(
                 children: [
-                  // Current Step Display
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.shade300),
-                    ),
-                    child: Text(
-                      currentStep,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                  // Operation Indicator Box
-                  if (operationIndicator.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: isSwapping
-                            ? Colors.red.shade100
-                            : comparingIndex1 >= 0
-                            ? Colors.orange.shade100
-                            : Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSwapping
-                              ? Colors.red.shade300
-                              : comparingIndex1 >= 0
-                              ? Colors.orange.shade300
-                              : Colors.green.shade300,
-                        ),
-                      ),
-                      child: Text(
-                        operationIndicator,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isSwapping
-                              ? Colors.red.shade800
-                              : comparingIndex1 >= 0
-                              ? Colors.orange.shade800
-                              : Colors.green.shade800,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-
-                  // Loop Status
+                  // Animated Bars
                   if (isSorting) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -705,9 +649,59 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                 ],
               ),
             ),
-          ),
+                            ),
 
-          // Information and Controls Area
+                  // Combined Status Display
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isSwapping
+                          ? Colors.red.shade100
+                          : comparingIndex1 >= 0
+                              ? Colors.orange.shade100
+                              : Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSwapping
+                            ? Colors.red.shade300
+                            : comparingIndex1 >= 0
+                                ? Colors.orange.shade300
+                                : Colors.blue.shade300,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          currentStep,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (operationIndicator.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            operationIndicator,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isSwapping
+                                  ? Colors.red.shade800
+                                  : comparingIndex1 >= 0
+                                      ? Colors.orange.shade800
+                                      : Colors.blue.shade800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  // Information and Controls Area
           Flexible(
             flex: 6,
             child: Container(
