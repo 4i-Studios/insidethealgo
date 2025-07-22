@@ -495,6 +495,23 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               ),
               child: Column(
                 children: [
+                  // Color Legend
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildColorLegend(Colors.blue, 'Unsorted'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.orange, 'Comparing'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.red, 'Swapping'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.green, 'Sorted'),
+                      ],
+                    ),
+                  ),
+                  
                   // Animated Bars
                   if (isSorting) ...[
                     Container(
@@ -649,7 +666,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                 ],
               ),
             ),
-                            ),
+          ),
 
                   // Combined Status Display
                   Container(
@@ -724,227 +741,239 @@ class _BubbleSortPageState extends State<BubbleSortPage>
 
                     const SizedBox(height: 16),
 
-                    // Control Buttons
-                    Column(
-                      children: [
-                        // First row - Main control buttons
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: isSorting ? null : startBubbleSort,
-                                icon: const Icon(Icons.play_arrow, size: 18),
-                                label: const Text('Start Sort'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: isSorting ? stopSorting : null,
-                                icon: const Icon(Icons.stop, size: 18),
-                                label: const Text('Stop'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: isSorting ? null : resetArray,
-                                icon: const Icon(Icons.refresh, size: 18),
-                                label: const Text('Reset'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: isSorting ? null : shuffleArray,
-                                icon: const Icon(Icons.shuffle, size: 18),
-                                label: const Text('Shuffle'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purple,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Second row - Sort order toggle
-                        ElevatedButton.icon(
-                          onPressed: isSorting ? null : toggleSortOrder,
-                          icon: Icon(
-                            isAscending
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            size: 18,
-                          ),
-                          label: Text(isAscending ? 'Ascending' : 'Descending'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isAscending
-                                ? Colors.blue
-                                : Colors.indigo,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Speed control
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Animation Speed: ${speed.toStringAsFixed(1)}x',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Slider(
-                                value: speed,
-                                min: 0.5,
-                                max: 3.0,
-                                divisions: 5,
-                                onChanged: isSorting ? null : updateSpeed,
-                                activeColor: Colors.blue,
-                                inactiveColor: Colors.grey.shade300,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                    // Controls Section
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        children: [
+                          // Main Controls Card
+                          Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  Text(
-                                    'Slow',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                  // Action Buttons Row
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        _buildControlButton(
+                                          onPressed: isSorting ? null : startBubbleSort,
+                                          icon: Icons.play_arrow,
+                                          label: 'Start Sort',
+                                          color: Colors.green,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        _buildControlButton(
+                                          onPressed: isSorting ? stopSorting : null,
+                                          icon: Icons.stop,
+                                          label: 'Stop',
+                                          color: Colors.red,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        _buildControlButton(
+                                          onPressed: isSorting ? null : resetArray,
+                                          icon: Icons.refresh,
+                                          label: 'Reset',
+                                          color: Colors.orange,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        _buildControlButton(
+                                          onPressed: isSorting ? null : shuffleArray,
+                                          icon: Icons.shuffle,
+                                          label: 'Shuffle',
+                                          color: Colors.purple,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Text(
-                                    'Fast',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
+
+                                  const SizedBox(height: 16),
+
+                                  // Sort Order Button - Centered
+                                  Center(
+                                    child: ElevatedButton.icon(
+                                      onPressed: isSorting ? null : toggleSortOrder,
+                                      icon: Icon(
+                                        isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                        size: 18,
+                                      ),
+                                      label: Text(isAscending ? 'Ascending' : 'Descending'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isAscending ? Colors.blue : Colors.indigo,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 12,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+
+                          const SizedBox(height: 16),
+
+                          // Speed Control Card
+                          Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.speed, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Animation Speed: ${speed.toStringAsFixed(1)}x',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Slider(
+                                    value: speed,
+                                    min: 0.5,
+                                    max: 3.0,
+                                    divisions: 5,
+                                    onChanged: isSorting ? null : updateSpeed,
+                                    activeColor: Colors.blue,
+                                    inactiveColor: Colors.grey.shade300,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Slow',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade600)),
+                                        Text('Fast',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade600)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 20),
 
-                    // Algorithm Information
-                    const Text(
-                      'Bubble Sort Algorithm',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                    // Algorithm Information Card
+                    Card(
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title with Icon
+                            Row(
+                              children: [
+                                Icon(Icons.sort, color: Colors.blue.shade700, size: 24),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Bubble Sort Algorithm',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            
+                            // How it Works Section
+                            Row(
+                              children: [
+                                Icon(Icons.tips_and_updates, color: Colors.orange.shade700, size: 20),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'How it Works:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.blue.shade100),
+                              ),
+                              child: Column(
+                                children: [
+                                  _buildStepItem(1, 'Compare adjacent elements in the array'),
+                                  _buildStepItem(2, 'If elements are in wrong order, swap them'),
+                                  _buildStepItem(3, 'Continue this process for the entire array'),
+                                  _buildStepItem(4, 'After each pass, one element "bubbles" to its position'),
+                                  _buildStepItem(5, 'Repeat until no more swaps are needed'),
+                                ],
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 20),
+                            
+                            // Time Complexity Section
+                            Row(
+                              children: [
+                                Icon(Icons.speed, color: Colors.purple.shade700, size: 20),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Time Complexity:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.purple.shade100),
+                              ),
+                              child: Column(
+                                children: [
+                                  _buildComplexityItem('Best Case:', 'O(n)', 'Array is already sorted', Colors.green),
+                                  const SizedBox(height: 8),
+                                  _buildComplexityItem('Average Case:', 'O(n²)', 'Random order', Colors.orange),
+                                  const SizedBox(height: 8),
+                                  _buildComplexityItem('Worst Case:', 'O(n²)', 'Array is reverse sorted', Colors.red),
+                                  const SizedBox(height: 8),
+                                  _buildComplexityItem('Space:', 'O(1)', 'Uses constant extra space', Colors.blue),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    const Text(
-                      'How Bubble Sort Works:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      '1. Compare adjacent elements in the array\n'
-                      '2. If elements are in wrong order (based on ascending/descending), swap them\n'
-                      '3. Continue this process for the entire array\n'
-                      '4. After each pass, one element "bubbles" to its correct position\n'
-                      '5. Repeat until no more swaps are needed\n\n',
-
-                      style: TextStyle(fontSize: 13, height: 1.5),
-                    ),
-
-                    // const SizedBox(height: 4),
-                    const Text(
-                      'Time Complexity:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    const Text(
-                      '• Best Case: O(n) - when array is already sorted\n'
-                      '• Average Case: O(n²) - random order\n'
-                      '• Worst Case: O(n²) - when array is reverse sorted\n'
-                      '• Space Complexity: O(1) - only uses constant extra space',
-                      style: TextStyle(fontSize: 13, height: 1.5),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    const Text(
-                      'Color Legend:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: [
-                        _buildColorLegend(Colors.blue, 'Unsorted'),
-                        _buildColorLegend(Colors.orange, 'Comparing'),
-                        _buildColorLegend(Colors.red, 'Swapping'),
-                        _buildColorLegend(Colors.green, 'Sorted'),
-                      ],
                     ),
                     const SizedBox(height: 100),
                   ],
@@ -990,6 +1019,111 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         ),
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildControlButton({
+    required VoidCallback? onPressed,
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepItem(int stepNumber, String description) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade700,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                '$stepNumber',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              description,
+              style: const TextStyle(fontSize: 14, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComplexityItem(String label, String complexity, String description, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 90,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ),
+        Container(
+          width: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Text(
+            complexity,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '- $description',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ),
       ],
     );
   }
