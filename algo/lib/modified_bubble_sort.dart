@@ -176,17 +176,19 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
 
       for (int j = 0; j < n - i - 1; j++) {
         if (shouldStop) break;
-        // Highlight the inner for loop line
+
+        // Highlight the inner for loop line and update j
         setState(() {
           highlightedLine = 3; // inner for loop
+          currentJ = j;  // Update j when highlighting the loop line
         });
         await Future.delayed(Duration(milliseconds: (400 / speed).round()));
-        // Highlight the if condition
+
+        // Highlight the if condition and update comparing indices
         setState(() {
-          currentJ = j;
+          highlightedLine = 4; // if condition
           comparingIndex1 = j;
           comparingIndex2 = j + 1;
-          highlightedLine = 4; // if condition
           currentStep = "Comparing  ${numbers[j]} and  ${numbers[j + 1]}";
           operationIndicator =
               "🔍 Comparing:  ${numbers[j]} vs  ${numbers[j + 1]}";
@@ -194,11 +196,13 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
         });
         await Future.delayed(Duration(milliseconds: (700 / speed).round()));
         if (shouldStop) break;
+
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
             : numbers[j] < numbers[j + 1];
+
         if (shouldSwap) {
-          // Highlight the swap line
+          // Highlight the swap line and prepare for swap
           setState(() {
             highlightedLine = 5; // swap line
             isSwapping = true;
@@ -207,25 +211,33 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
                 "🔄 Swapping:  ${numbers[j]} ↔  ${numbers[j + 1]} (${isAscending ? ' ${numbers[j]} >  ${numbers[j + 1]}' : ' ${numbers[j]} <  ${numbers[j + 1]}'})";
             totalSwaps++;
           });
+
+          // Perform animation and swap at swap() line
+          _animationController.forward();
+          await Future.delayed(Duration(milliseconds: (800 / speed).round()));
+          if (shouldStop) break;
+
+          // Perform the actual swap
+          setState(() {
+            int temp = numbers[j];
+            numbers[j] = numbers[j + 1];
+            numbers[j + 1] = temp;
+          });
+
+          _animationController.reset();
+          setState(() {
+            isSwapping = false;
+          });
           await Future.delayed(Duration(milliseconds: (500 / speed).round()));
-          // Highlight the swapped = true line
+
+          // Now move to swapped = true line
           setState(() {
             highlightedLine = 6; // swapped = true line
             swapped = true;
             currentSwapped = true;
           });
           await Future.delayed(Duration(milliseconds: (400 / speed).round()));
-          _animationController.forward();
-          await Future.delayed(Duration(milliseconds: (800 / speed).round()));
-          if (shouldStop) break;
-          int temp = numbers[j];
-          numbers[j] = numbers[j + 1];
-          numbers[j + 1] = temp;
-          _animationController.reset();
-          setState(() {
-            isSwapping = false;
-          });
-          await Future.delayed(Duration(milliseconds: (300 / speed).round()));
+
           setState(() {
             currentStep =
                 "No swap needed - ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'}";

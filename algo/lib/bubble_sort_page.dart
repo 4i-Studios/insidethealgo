@@ -169,17 +169,18 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       for (int j = 0; j < n - i - 1; j++) {
         if (shouldStop) break;
 
-        // Highlight the inner for loop line first
+        // Highlight the inner for loop line first and update j
         setState(() {
           highlightedLine = 2; // Inner for loop
+          currentJ = j;  // Update j when highlighting the loop line
         });
         await Future.delayed(Duration(milliseconds: (400 / speed).round()));
 
+        // Highlight comparison line and update comparing indices
         setState(() {
-          currentJ = j;
+          highlightedLine = 3; // Comparison line
           comparingIndex1 = j;
           comparingIndex2 = j + 1;
-          highlightedLine = 3; // Comparison line
           currentStep = "Comparing ${numbers[j]} and ${numbers[j + 1]}";
           operationIndicator =
               "🔍 Comparing: ${numbers[j]} vs ${numbers[j + 1]}";
@@ -189,15 +190,15 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
         if (shouldStop) break;
 
-        // Check condition based on sorting order
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
             : numbers[j] < numbers[j + 1];
 
         if (shouldSwap) {
+          // Highlight swap line and prepare for swap
           setState(() {
-            isSwapping = true;
             highlightedLine = 4; // Swap block
+            isSwapping = true;
             currentStep = "Swapping ${numbers[j]} and ${numbers[j + 1]}";
             operationIndicator =
                 "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
@@ -209,9 +210,11 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           if (shouldStop) break;
 
           // Perform the swap
-          int temp = numbers[j];
-          numbers[j] = numbers[j + 1];
-          numbers[j + 1] = temp;
+          setState(() {
+            int temp = numbers[j];
+            numbers[j] = numbers[j + 1];
+            numbers[j + 1] = temp;
+          });
 
           _animationController.reset();
           setState(() {
