@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-class BubbleSortPage extends StatefulWidget {
-  const BubbleSortPage({super.key});
+class ModifiedBubbleSortPage extends StatefulWidget {
+  const ModifiedBubbleSortPage({super.key});
 
   @override
-  State<BubbleSortPage> createState() => _BubbleSortPageState();
+  State<ModifiedBubbleSortPage> createState() => _ModifiedBubbleSortPageState();
 }
 
-class _BubbleSortPageState extends State<BubbleSortPage>
+class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
     with TickerProviderStateMixin {
   List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
   List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
@@ -36,6 +36,9 @@ class _BubbleSortPageState extends State<BubbleSortPage>
 
   late AnimationController _animationController;
   late Animation<double> _swapAnimation;
+
+  // In the State class, add a new variable to track swapped for UI
+  bool currentSwapped = false;
 
   @override
   void initState() {
@@ -71,6 +74,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       operationIndicator = "";
       totalComparisons = 0;
       totalSwaps = 0;
+      currentSwapped = false;
     });
   }
 
@@ -81,6 +85,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       highlightedLine = -1;
       currentStep = "Sorting stopped by user";
       operationIndicator = "⏹️ Sorting process halted";
+      currentSwapped = false;
     });
   }
 
@@ -120,6 +125,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       operationIndicator = "";
       totalComparisons = 0;
       totalSwaps = 0;
+      currentSwapped = false;
     });
   }
 
@@ -134,12 +140,12 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       totalSwaps = 0;
       operationIndicator = "";
       highlightedLine = 0; // Highlight function declaration
+      currentSwapped = false;
     });
 
     int n = numbers.length;
     String orderText = isAscending ? "ascending" : "descending";
 
-    // Highlight outer loop
     setState(() {
       highlightedLine = 1; // Outer for loop
     });
@@ -148,19 +154,21 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     for (int i = 0; i < n - 1; i++) {
       if (shouldStop) break;
 
+      bool swapped = false; // MODIFIED: Track if any swap happened
+
       setState(() {
         currentI = i;
         highlightedLine = 1; // Keep highlighting outer loop
         currentStep =
-            "Pass ${i + 1}: Finding the ${isAscending ? 'largest' : 'smallest'} element in remaining array";
+            "Pass  ${i + 1}: Finding the ${isAscending ? 'largest' : 'smallest'} element in remaining array";
         operationIndicator =
             "Starting pass ${i + 1} of ${n - 1} ($orderText order)";
+        currentSwapped = false;
       });
 
       await Future.delayed(Duration(milliseconds: (500 / speed).round()));
       if (shouldStop) break;
 
-      // Highlight inner loop
       setState(() {
         highlightedLine = 2; // Inner for loop
       });
@@ -168,72 +176,86 @@ class _BubbleSortPageState extends State<BubbleSortPage>
 
       for (int j = 0; j < n - i - 1; j++) {
         if (shouldStop) break;
-
+        // Highlight the inner for loop line
+        setState(() {
+          highlightedLine = 3; // inner for loop
+        });
+        await Future.delayed(Duration(milliseconds: (400 / speed).round()));
+        // Highlight the if condition
         setState(() {
           currentJ = j;
           comparingIndex1 = j;
           comparingIndex2 = j + 1;
-          highlightedLine = 3; // Comparison line
-          currentStep = "Comparing ${numbers[j]} and ${numbers[j + 1]}";
+          highlightedLine = 4; // if condition
+          currentStep = "Comparing  ${numbers[j]} and  ${numbers[j + 1]}";
           operationIndicator =
-              "🔍 Comparing: ${numbers[j]} vs ${numbers[j + 1]}";
+              "🔍 Comparing:  ${numbers[j]} vs  ${numbers[j + 1]}";
           totalComparisons++;
         });
-
-        await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+        await Future.delayed(Duration(milliseconds: (700 / speed).round()));
         if (shouldStop) break;
-
-        // Check condition based on sorting order
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
             : numbers[j] < numbers[j + 1];
-
         if (shouldSwap) {
+          // Highlight the swap line
           setState(() {
+            highlightedLine = 5; // swap line
             isSwapping = true;
-            highlightedLine = 4; // Swap block
-            currentStep = "Swapping ${numbers[j]} and ${numbers[j + 1]}";
+            currentStep = "Swapping  ${numbers[j]} and  ${numbers[j + 1]}";
             operationIndicator =
-                "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
+                "🔄 Swapping:  ${numbers[j]} ↔  ${numbers[j + 1]} (${isAscending ? ' ${numbers[j]} >  ${numbers[j + 1]}' : ' ${numbers[j]} <  ${numbers[j + 1]}'})";
             totalSwaps++;
           });
-
+          await Future.delayed(Duration(milliseconds: (500 / speed).round()));
+          // Highlight the swapped = true line
+          setState(() {
+            highlightedLine = 6; // swapped = true line
+            swapped = true;
+            currentSwapped = true;
+          });
+          await Future.delayed(Duration(milliseconds: (400 / speed).round()));
           _animationController.forward();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
           if (shouldStop) break;
-
-          // Perform the swap
           int temp = numbers[j];
           numbers[j] = numbers[j + 1];
           numbers[j + 1] = temp;
-
           _animationController.reset();
           setState(() {
             isSwapping = false;
           });
-
           await Future.delayed(Duration(milliseconds: (300 / speed).round()));
-        } else {
           setState(() {
             currentStep =
-                "No swap needed - ${isAscending ? '${numbers[j]} ≤ ${numbers[j + 1]}' : '${numbers[j]} ≥ ${numbers[j + 1]}'}";
+                "No swap needed - ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'}";
             operationIndicator =
-                "✓ No swap: ${isAscending ? '${numbers[j]} ≤ ${numbers[j + 1]}' : '${numbers[j]} ≥ ${numbers[j + 1]}'} (already in order)";
+                "✓ No swap: ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'} (already in order)";
           });
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
         }
       }
-
-      if (shouldStop) break;
-
+      // After the inner for loop, highlight the swapped comment and if condition
       setState(() {
-        highlightedLine = 5; // End of pass
-        currentStep =
-            "Pass ${i + 1} completed - ${numbers[n - i - 1]} is in correct position";
-        operationIndicator =
-            "✅ Pass ${i + 1} complete! Element ${numbers[n - i - 1]} is sorted";
+        highlightedLine = 9; // swapped comment line
       });
-      await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+      await Future.delayed(Duration(milliseconds: (400 / speed).round()));
+      setState(() {
+        highlightedLine = 10; // if (!swapped) break; line
+      });
+      await Future.delayed(Duration(milliseconds: (600 / speed).round()));
+
+      if (!swapped) {
+        // MODIFIED: If no swaps, array is sorted
+        setState(() {
+          currentStep =
+              "No swaps in this pass. Array is already sorted! Early exit.";
+          operationIndicator =
+              "🚀 Optimized: Exiting early as array is sorted.";
+        });
+        await Future.delayed(Duration(milliseconds: (1200 / speed).round()));
+        break;
+      }
     }
 
     setState(() {
@@ -243,6 +265,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       comparingIndex2 = -1;
       isSorting = false;
       highlightedLine = -1; // Clear highlight
+      currentSwapped = false;
 
       if (shouldStop) {
         currentStep = "Sorting stopped by user";
@@ -297,31 +320,109 @@ class _BubbleSortPageState extends State<BubbleSortPage>
 
     // For swap line
     String swapText = (currentJ >= 0 && currentJ + 1 < numbers.length)
-        ? '    swap($arrJ, $arrJplus1);'
-        : '    swap(arr[j], arr[j + 1]);';
+        ? '        swap($arrJ, $arrJplus1);'
+        : '        swap(arr[j], arr[j + 1]);';
 
-    // Dynamic code lines
+    // Dynamic code lines for modified bubble sort
     List<Map<String, dynamic>> codeLines = [
       {
         'line': 0,
-        'text': 'void bubbleSort(List<int> arr, bool ascending) {',
+        'text': 'void modifiedBubbleSort(List<int> arr, bool ascending) {',
         'indent': 0,
       },
       {
         'line': 1,
-        'text': 'for (int i = $iValue; i < $nValue - 1; i++) {',
+        'text': '  for (int i = $iValue; i < $nValue - 1; i++) {',
         'indent': 1,
       },
       {
         'line': 2,
-        'text': 'for (int j = $jValue; j < $nValue - $iValue - 1; j++) {',
+        'text': '    bool swapped = false;',
         'indent': 2,
       },
-      {'line': 3, 'text': 'if ($arrJ $compareOp $arrJplus1) {', 'indent': 3},
-      {'line': 4, 'text': swapText, 'indent': 3},
-      {'line': 5, 'text': '}', 'indent': 2},
-      {'line': 6, 'text': 'Sorting Complete!', 'indent': 0},
+      {
+        'line': 3,
+        'text': '    for (int j = $jValue; j < $nValue - $iValue - 1; j++) {',
+        'indent': 2,
+      },
+      {
+        'line': 4,
+        'text': '      if ($arrJ $compareOp $arrJplus1) {',
+        'indent': 3,
+      },
+      {
+        'line': 5,
+        'text': swapText,
+        'indent': 4,
+      },
+      {
+        'line': 6,
+        'text': '        swapped = true;',
+        'indent': 4,
+      },
+      {
+        'line': 7,
+        'text': '      }',
+        'indent': 3,
+      },
+      {
+        'line': 8,
+        'text': '    }',
+        'indent': 2,
+      },
+      {
+        'line': 9,
+        'text': '// current swapped value: ' + (currentSwapped ? 'true' : 'false'),
+        'indent': 2,
+        'isSwappedComment': true,
+      },
+      {
+        'line': 10,
+        'text': '    if (!swapped) break;',
+        'indent': 2,
+      },
+      {
+        'line': 11,
+        'text': '  }',
+        'indent': 1,
+      },
+      {
+        'line': 12,
+        'text': '  // Sorting Complete!',
+        'indent': 0,
+      },
     ];
+
+    Widget swappedBadge(bool value) {
+      return Container(
+        margin: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: value ? Colors.green.shade100 : Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: value ? Colors.green : Colors.grey, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              value ? Icons.check_circle : Icons.cancel,
+              color: value ? Colors.green : Colors.grey,
+              size: 14,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              value ? 'swapped: true' : 'swapped: false',
+              style: TextStyle(
+                color: value ? Colors.green.shade800 : Colors.grey.shade800,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -373,7 +474,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                 ),
                 const SizedBox(width: 16),
                 const Text(
-                  'BubbleSort.dart',
+                  'ModifiedBubbleSort.dart',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -389,7 +490,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: codeLines.map((codeLine) {
-                if (codeLine['line'] == 6 && !isSorted) {
+                if (codeLine['line'] == 12 && !isSorted) {
                   return const SizedBox.shrink(); // Don't show completion line until sorted
                 }
 
@@ -432,18 +533,44 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                       SizedBox(width: codeLine['indent'] * 16.0),
                       // Code text
                       Expanded(
-                        child: Text(
-                          codeLine['text'],
-                          style: TextStyle(
-                            color: isHighlighted
-                                ? Colors.white
-                                : _getCodeTextColor(codeLine['text']),
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                            fontWeight: isHighlighted
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: codeLine['isSwappedComment'] == true
+                                  ? Text(
+                                      codeLine['text'],
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 12,
+                                        fontFamily: 'monospace',
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : Text(
+                                      codeLine['text'],
+                                      style: TextStyle(
+                                        color: isHighlighted
+                                            ? Colors.white
+                                            : _getCodeTextColor(codeLine['text']),
+                                        fontSize: 12,
+                                        fontFamily: 'monospace',
+                                        fontWeight: isHighlighted
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                            ),
+                            if (codeLine['showSwapped'] == true)
+                              Text(
+                                ' // swapped: ' + (currentSwapped ? 'true' : 'false'),
+                                style: TextStyle(
+                                  color: currentSwapped ? Colors.green : Colors.red,
+                                  fontSize: 12,
+                                  fontFamily: 'monospace',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -474,7 +601,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bubble Sort Algorithm Demo'),
+        title: const Text('Modified Bubble Sort Demo'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
       ),
@@ -511,7 +638,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                       ],
                     ),
                   ),
-                  
+
                   // Loop Status
                   if (isSorting || isSorted) ...[
                     Container(
@@ -668,57 +795,57 @@ class _BubbleSortPageState extends State<BubbleSortPage>
             ),
           ),
 
-                  // Combined Status Display
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isSwapping
-                          ? Colors.red.shade100
-                          : comparingIndex1 >= 0
-                              ? Colors.orange.shade100
-                              : Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSwapping
-                            ? Colors.red.shade300
-                            : comparingIndex1 >= 0
-                                ? Colors.orange.shade300
-                                : Colors.blue.shade300,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          currentStep,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (operationIndicator.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            operationIndicator,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isSwapping
-                                  ? Colors.red.shade800
-                                  : comparingIndex1 >= 0
-                                      ? Colors.orange.shade800
-                                      : Colors.blue.shade800,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ],
-                    ),
+          // Combined Status Display
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isSwapping
+                  ? Colors.red.shade100
+                  : comparingIndex1 >= 0
+                  ? Colors.orange.shade100
+                  : Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSwapping
+                    ? Colors.red.shade300
+                    : comparingIndex1 >= 0
+                    ? Colors.orange.shade300
+                    : Colors.blue.shade300,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  currentStep,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
+                  textAlign: TextAlign.center,
+                ),
+                if (operationIndicator.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    operationIndicator,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isSwapping
+                          ? Colors.red.shade800
+                          : comparingIndex1 >= 0
+                          ? Colors.orange.shade800
+                          : Colors.blue.shade800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
 
-                  // Information and Controls Area
+          // Information and Controls Area
           Flexible(
             flex: 6,
             child: Container(
@@ -758,31 +885,40 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                   SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         _buildControlButton(
-                                          onPressed: isSorting ? null : startBubbleSort,
+                                          onPressed: isSorting
+                                              ? null
+                                              : startBubbleSort,
                                           icon: Icons.play_arrow,
                                           label: 'Start Sort',
                                           color: Colors.green,
                                         ),
                                         const SizedBox(width: 12),
                                         _buildControlButton(
-                                          onPressed: isSorting ? stopSorting : null,
+                                          onPressed: isSorting
+                                              ? stopSorting
+                                              : null,
                                           icon: Icons.stop,
                                           label: 'Stop',
                                           color: Colors.red,
                                         ),
                                         const SizedBox(width: 12),
                                         _buildControlButton(
-                                          onPressed: isSorting ? null : resetArray,
+                                          onPressed: isSorting
+                                              ? null
+                                              : resetArray,
                                           icon: Icons.refresh,
                                           label: 'Reset',
                                           color: Colors.orange,
                                         ),
                                         const SizedBox(width: 12),
                                         _buildControlButton(
-                                          onPressed: isSorting ? null : shuffleArray,
+                                          onPressed: isSorting
+                                              ? null
+                                              : shuffleArray,
                                           icon: Icons.shuffle,
                                           label: 'Shuffle',
                                           color: Colors.purple,
@@ -796,14 +932,24 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                   // Sort Order Button - Centered
                                   Center(
                                     child: ElevatedButton.icon(
-                                      onPressed: isSorting ? null : toggleSortOrder,
+                                      onPressed: isSorting
+                                          ? null
+                                          : toggleSortOrder,
                                       icon: Icon(
-                                        isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                                        isAscending
+                                            ? Icons.arrow_upward
+                                            : Icons.arrow_downward,
                                         size: 18,
                                       ),
-                                      label: Text(isAscending ? 'Ascending' : 'Descending'),
+                                      label: Text(
+                                        isAscending
+                                            ? 'Ascending'
+                                            : 'Descending',
+                                      ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: isAscending ? Colors.blue : Colors.indigo,
+                                        backgroundColor: isAscending
+                                            ? Colors.blue
+                                            : Colors.indigo,
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 24,
@@ -852,18 +998,27 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                     inactiveColor: Colors.grey.shade300,
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Slow',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade600)),
-                                        Text('Fast',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade600)),
+                                        Text(
+                                          'Slow',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Fast',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -888,10 +1043,14 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                             // Title with Icon
                             Row(
                               children: [
-                                Icon(Icons.sort, color: Colors.blue.shade700, size: 24),
+                                Icon(
+                                  Icons.sort,
+                                  color: Colors.blue.shade700,
+                                  size: 24,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
-                                  'Bubble Sort Algorithm',
+                                  'Modified Bubble Sort Algorithm',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -901,11 +1060,14 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                               ],
                             ),
                             const Divider(height: 24),
-                            
                             // How it Works Section
                             Row(
                               children: [
-                                Icon(Icons.tips_and_updates, color: Colors.orange.shade700, size: 20),
+                                Icon(
+                                  Icons.tips_and_updates,
+                                  color: Colors.orange.shade700,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'How it Works:',
@@ -926,21 +1088,38 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                               ),
                               child: Column(
                                 children: [
-                                  _buildStepItem(1, 'Compare adjacent elements in the array'),
-                                  _buildStepItem(2, 'If elements are in wrong order, swap them'),
-                                  _buildStepItem(3, 'Continue this process for the entire array'),
-                                  _buildStepItem(4, 'After each pass, one element "bubbles" to its position'),
-                                  _buildStepItem(5, 'Repeat until no more swaps are needed'),
+                                  _buildStepItem(
+                                    1,
+                                    'Compare adjacent elements in the array',
+                                  ),
+                                  _buildStepItem(
+                                    2,
+                                    'If elements are in wrong order, swap them',
+                                  ),
+                                  _buildStepItem(
+                                    3,
+                                    'Continue this process for the entire array',
+                                  ),
+                                  _buildStepItem(
+                                    4,
+                                    'After each pass, one element "bubbles" to its position',
+                                  ),
+                                  _buildStepItem(
+                                    5,
+                                    'If no swaps in a pass, array is sorted (early exit!)',
+                                  ),
                                 ],
                               ),
                             ),
-                            
                             const SizedBox(height: 20),
-                            
                             // Time Complexity Section
                             Row(
                               children: [
-                                Icon(Icons.speed, color: Colors.purple.shade700, size: 20),
+                                Icon(
+                                  Icons.speed,
+                                  color: Colors.purple.shade700,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Time Complexity:',
@@ -957,17 +1136,110 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                               decoration: BoxDecoration(
                                 color: Colors.purple.shade50,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.purple.shade100),
+                                border: Border.all(
+                                  color: Colors.purple.shade100,
+                                ),
                               ),
                               child: Column(
                                 children: [
-                                  _buildComplexityItem('Best Case:', 'O(n)', 'Array is already sorted', Colors.green),
+                                  _buildComplexityItem(
+                                    'Best Case:',
+                                    'O(n)',
+                                    'Array is already sorted (early exit)',
+                                    Colors.green,
+                                  ),
                                   const SizedBox(height: 8),
-                                  _buildComplexityItem('Average Case:', 'O(n²)', 'Random order', Colors.orange),
+                                  _buildComplexityItem(
+                                    'Average Case:',
+                                    'O(n²)',
+                                    'Random order',
+                                    Colors.orange,
+                                  ),
                                   const SizedBox(height: 8),
-                                  _buildComplexityItem('Worst Case:', 'O(n²)', 'Array is reverse sorted', Colors.red),
+                                  _buildComplexityItem(
+                                    'Worst Case:',
+                                    'O(n²)',
+                                    'Array is reverse sorted',
+                                    Colors.red,
+                                  ),
                                   const SizedBox(height: 8),
-                                  _buildComplexityItem('Space:', 'O(1)', 'Uses constant extra space', Colors.blue),
+                                  _buildComplexityItem(
+                                    'Space:',
+                                    'O(1)',
+                                    'Uses constant extra space',
+                                    Colors.blue,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Comparison Section
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.compare,
+                                  color: Colors.teal.shade700,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Why is it better?',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.teal.shade100),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.check_circle, color: Colors.green, size: 18),
+                                      const SizedBox(width: 6),
+                                      const Expanded(
+                                        child: Text(
+                                          'Modified Bubble Sort can stop early if the array is already sorted, saving time!',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.flash_on, color: Colors.orange, size: 18),
+                                      const SizedBox(width: 6),
+                                      const Expanded(
+                                        child: Text(
+                                          'It is much faster than standard Bubble Sort for nearly sorted arrays.',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.info_outline, color: Colors.blue, size: 18),
+                                      const SizedBox(width: 6),
+                                      const Expanded(
+                                        child: Text(
+                                          'Standard Bubble Sort always does all passes, even if the array is sorted.',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -1036,13 +1308,8 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
@@ -1083,17 +1350,19 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     );
   }
 
-  Widget _buildComplexityItem(String label, String complexity, String description, Color color) {
+  Widget _buildComplexityItem(
+    String label,
+    String complexity,
+    String description,
+    Color color,
+  ) {
     return Row(
       children: [
         Container(
           width: 90,
           child: Text(
             label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
           ),
         ),
         Container(
@@ -1118,10 +1387,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         Expanded(
           child: Text(
             '- $description',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
           ),
         ),
       ],

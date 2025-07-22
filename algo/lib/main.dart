@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'bubble_sort_page.dart';
+import 'algorithm_list_page.dart';
 
 void main() {
   runApp(const BubbleSortApp());
@@ -16,7 +16,7 @@ class BubbleSortApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const BubbleSortPage(),
+      home: const AlgorithmListPage(),
       debugShowCheckedModeBanner: false,
     );
   }
