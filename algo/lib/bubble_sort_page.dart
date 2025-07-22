@@ -281,6 +281,19 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     return Colors.blue;
   }
 
+  // Add helper method for responsive sizes
+  double _getResponsiveSize(BuildContext context, {
+    required double defaultSize,
+    required double minSize,
+    double? maxSize,
+  }) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double size = (screenWidth / 400) * defaultSize; // 400 is a reference width
+    return size.clamp(minSize, maxSize ?? defaultSize);
+  }
+
+  // Update the bar visualization with responsive sizes
+  // Inside AnimatedBuilder for bars
   Widget _buildCodeDisplay() {
     int n = numbers.length;
     // Prepare dynamic values for code simulation
@@ -395,70 +408,79 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           // Code content
           Container(
             padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: codeLines.map((codeLine) {
-                if (codeLine['line'] == 6 && !isSorted) {
-                  return const SizedBox.shrink(); // Don't show completion line until sorted
-                }
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: codeLines.map((codeLine) {
+                  if (codeLine['line'] == 6 && !isSorted) {
+                    return const SizedBox.shrink(); // Don't show completion line until sorted
+                  }
 
-                bool isHighlighted = highlightedLine == codeLine['line'];
+                  bool isHighlighted = highlightedLine == codeLine['line'];
 
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 2,
-                    horizontal: 4,
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 1),
-                  decoration: BoxDecoration(
-                    color: isHighlighted
-                        ? const Color(0xFF264F78).withOpacity(
-                            0.8,
-                          ) // VS Code highlight blue
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(3),
-                    border: isHighlighted
-                        ? Border.all(color: const Color(0xFF0E639C), width: 1)
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      // Line number
-                      SizedBox(
-                        width: 24,
-                        child: Text(
-                          '${codeLine['line'] + 1}',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12,
-                            fontFamily: 'monospace',
+                  return Container(
+                    constraints: BoxConstraints(
+                      minWidth: MediaQuery.of(context).size.width - 32,
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
+                      horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
+                    ),
+                    margin: EdgeInsets.symmetric(
+                      vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
+                    ),
+                    decoration: BoxDecoration(
+                      color: isHighlighted
+                          ? const Color(0xFF264F78).withOpacity(
+                              0.8,
+                            ) // VS Code highlight blue
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(3),
+                      border: isHighlighted
+                          ? Border.all(color: const Color(0xFF0E639C), width: 1)
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        // Line number
+                        SizedBox(
+                          width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
+                          child: Text(
+                            '${codeLine['line'] + 1}',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                              fontFamily: 'monospace',
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Indentation
-                      SizedBox(width: codeLine['indent'] * 16.0),
-                      // Code text
-                      Expanded(
-                        child: Text(
-                          codeLine['text'],
-                          style: TextStyle(
-                            color: isHighlighted
-                                ? Colors.white
-                                : _getCodeTextColor(codeLine['text']),
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                            fontWeight: isHighlighted
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                        SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
+                        // Indentation
+                        SizedBox(
+                          width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12),
+                        ),
+                        // Code text
+                        Expanded(
+                          child: Text(
+                            codeLine['text'],
+                            style: TextStyle(
+                              color: isHighlighted
+                                  ? Colors.white
+                                  : _getCodeTextColor(codeLine['text']),
+                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                              fontFamily: 'monospace',
+                              fontWeight: isHighlighted
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ],
@@ -586,6 +608,9 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                 scrollDirection: Axis.horizontal,
                                 child: Container(
                                   height: totalHeight,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
+                                  ),
                                   alignment: Alignment.bottomCenter,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -601,16 +626,16 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                         if (index == comparingIndex1) {
                                           offset =
                                               _swapAnimation.value *
-                                              34; // Bar width + padding
+                                              _getResponsiveSize(context, defaultSize: 34, minSize: 24);
                                         } else if (index == comparingIndex2) {
                                           offset =
                                               -_swapAnimation.value *
-                                              34; // Bar width + padding
+                                              _getResponsiveSize(context, defaultSize: 34, minSize: 24);
                                         }
                                       }
 
                                       // Calculate bar height ensuring it doesn't exceed available space
-                                      double minBarHeight = 10.0;
+                                      double minBarHeight = _getResponsiveSize(context, defaultSize: 10, minSize: 6);
                                       double calculatedHeight =
                                           (value / maxNumber) *
                                           availableBarHeight;
@@ -622,8 +647,8 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                       );
 
                                       return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 3,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: _getResponsiveSize(context, defaultSize: 3, minSize: 2),
                                         ),
                                         child: Transform.translate(
                                           offset: Offset(offset, 0),
@@ -636,25 +661,23 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                                 // Number label on top
                                                 Text(
                                                   value.toString(),
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 11,
+                                                    fontSize: _getResponsiveSize(context, defaultSize: 11, minSize: 9),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 2),
                                                 // Bar - Use Flexible to take remaining space
-                                                Flexible(
-                                                  child: Container(
-                                                    width: 28,
-                                                    height: barHeight,
-                                                    decoration: BoxDecoration(
-                                                      color: getBarColor(index),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            4,
-                                                          ),
-                                                      // Removed boxShadow to prevent overflow
-                                                    ),
+                                                Container(
+                                                  width: _getResponsiveSize(context, defaultSize: 28, minSize: 20),
+                                                  height: barHeight,
+                                                  decoration: BoxDecoration(
+                                                    color: getBarColor(index),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
+                                                    // Removed boxShadow to prevent overflow
                                                   ),
                                                 ),
                                               ],
