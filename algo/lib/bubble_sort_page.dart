@@ -371,17 +371,13 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        // Calculate available height ensuring text + bar + spacing fits
+                        // Calculate available height for bars
                         double totalHeight = constraints.maxHeight;
-                        double textHeight = 20; // Height for number label
-                        double spacing = 2; // Spacing between text and bar
+                        double reservedHeight = 30; // For text and spacing
                         double availableBarHeight =
-                            totalHeight -
-                            textHeight -
-                            spacing -
-                            10; // Extra padding
+                            totalHeight - reservedHeight;
 
-                        // Ensure minimum available height to prevent clamp errors
+                        // Ensure minimum available height
                         availableBarHeight = availableBarHeight.clamp(
                           20.0,
                           double.infinity,
@@ -410,36 +406,26 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                       double offset = 0;
                                       if (isSwapping) {
                                         if (index == comparingIndex1) {
-                                          offset = _swapAnimation.value * 60;
+                                          offset =
+                                              _swapAnimation.value *
+                                              34; // Bar width + padding
                                         } else if (index == comparingIndex2) {
-                                          offset = -_swapAnimation.value * 60;
+                                          offset =
+                                              -_swapAnimation.value *
+                                              34; // Bar width + padding
                                         }
                                       }
 
                                       // Calculate bar height ensuring it doesn't exceed available space
-                                      double minBarHeight = 15.0;
+                                      double minBarHeight = 10.0;
                                       double calculatedHeight =
                                           (value / maxNumber) *
                                           availableBarHeight;
-                                      // Ensure the TOTAL height (text + spacing + bar) fits in totalHeight
-                                      double maxAllowedBarHeight =
-                                          totalHeight -
-                                          textHeight -
-                                          spacing -
-                                          5; // Extra 5px buffer
 
-                                      // If even the minimum bar height would cause overflow, reduce it
-                                      if (minBarHeight > maxAllowedBarHeight) {
-                                        minBarHeight =
-                                            (maxAllowedBarHeight * 0.8).clamp(
-                                              5.0,
-                                              maxAllowedBarHeight,
-                                            );
-                                      }
-
+                                      // Ensure the bar height fits within available space
                                       double barHeight = calculatedHeight.clamp(
                                         minBarHeight,
-                                        maxAllowedBarHeight,
+                                        availableBarHeight,
                                       );
 
                                       return Padding(
@@ -448,51 +434,38 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                         ),
                                         child: Transform.translate(
                                           offset: Offset(offset, 0),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              // Number label on top
-                                              SizedBox(
-                                                height: textHeight,
-                                                child: Center(
-                                                  child: Text(
-                                                    value.toString(),
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 11,
+                                          child: SizedBox(
+                                            height: totalHeight,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                // Number label on top
+                                                Text(
+                                                  value.toString(),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                // Bar - Use Flexible to take remaining space
+                                                Flexible(
+                                                  child: Container(
+                                                    width: 28,
+                                                    height: barHeight,
+                                                    decoration: BoxDecoration(
+                                                      color: getBarColor(index),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      // Removed boxShadow to prevent overflow
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              SizedBox(height: spacing),
-                                              // Bar
-                                              AnimatedContainer(
-                                                duration: const Duration(
-                                                  milliseconds: 300,
-                                                ),
-                                                width: 28,
-                                                height: barHeight,
-                                                decoration: BoxDecoration(
-                                                  color: getBarColor(index),
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.black
-                                                          .withOpacity(0.2),
-                                                      blurRadius: 3,
-                                                      offset: const Offset(
-                                                        0,
-                                                        2,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       );
