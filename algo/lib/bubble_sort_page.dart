@@ -485,7 +485,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           ),
 
           // Information and Controls Area
-          Expanded(
+          Flexible(
             flex: 5,
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -669,16 +669,12 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                       '2. If elements are in wrong order (based on ascending/descending), swap them\n'
                       '3. Continue this process for the entire array\n'
                       '4. After each pass, one element "bubbles" to its correct position\n'
-                      '5. Repeat until no more swaps are needed\n\n'
-                      'Features:\n'
-                      '• Toggle between ascending ↑ and descending ↓ order\n'
-                      '• Adjust animation speed (0.5x to 3.0x)\n'
-                      '• Stop sorting at any time',
+                      '5. Repeat until no more swaps are needed\n\n',
+
                       style: TextStyle(fontSize: 13, height: 1.5),
                     ),
 
-                    const SizedBox(height: 12),
-
+                    // const SizedBox(height: 4),
                     const Text(
                       'Time Complexity:',
                       style: TextStyle(
@@ -719,6 +715,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                         _buildColorLegend(Colors.green, 'Sorted'),
                       ],
                     ),
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
