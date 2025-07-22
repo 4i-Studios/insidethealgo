@@ -421,9 +421,25 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                       double calculatedHeight =
                                           (value / maxNumber) *
                                           availableBarHeight;
+                                      // Ensure the TOTAL height (text + spacing + bar) fits in totalHeight
+                                      double maxAllowedBarHeight =
+                                          totalHeight -
+                                          textHeight -
+                                          spacing -
+                                          5; // Extra 5px buffer
+
+                                      // If even the minimum bar height would cause overflow, reduce it
+                                      if (minBarHeight > maxAllowedBarHeight) {
+                                        minBarHeight =
+                                            (maxAllowedBarHeight * 0.8).clamp(
+                                              5.0,
+                                              maxAllowedBarHeight,
+                                            );
+                                      }
+
                                       double barHeight = calculatedHeight.clamp(
                                         minBarHeight,
-                                        availableBarHeight,
+                                        maxAllowedBarHeight,
                                       );
 
                                       return Padding(
