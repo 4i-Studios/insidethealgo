@@ -169,6 +169,12 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       for (int j = 0; j < n - i - 1; j++) {
         if (shouldStop) break;
 
+        // Highlight the inner for loop line first
+        setState(() {
+          highlightedLine = 2; // Inner for loop
+        });
+        await Future.delayed(Duration(milliseconds: (400 / speed).round()));
+
         setState(() {
           currentJ = j;
           comparingIndex1 = j;
