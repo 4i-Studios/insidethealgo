@@ -273,20 +273,52 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   }
 
   Widget _buildCodeDisplay() {
+    int n = numbers.length;
+    // Prepare dynamic values for code simulation
+    String iValue = currentI >= 0 ? '$currentI' : 'i';
+    String jValue = currentJ >= 0 ? '$currentJ' : 'j';
+    String nValue = '$n';
+    String nMinus1Value = '${n - 1}';
+    String nMinusIValue = currentI >= 0 ? '${n - currentI}' : 'n - i';
+    String nMinusIminus1Value = (currentI >= 0)
+        ? '${n - currentI - 1}'
+        : 'n - i - 1';
+
+    // For arr[j] and arr[j+1]
+    String arrJ = (currentJ >= 0 && currentJ < numbers.length)
+        ? '${numbers[currentJ]}'
+        : 'arr[j]';
+    String arrJplus1 = (currentJ >= 0 && currentJ + 1 < numbers.length)
+        ? '${numbers[currentJ + 1]}'
+        : 'arr[j + 1]';
+
+    // For comparison operator
+    String compareOp = isAscending ? '>' : '<';
+
+    // For swap line
+    String swapText = (currentJ >= 0 && currentJ + 1 < numbers.length)
+        ? '    swap($arrJ, $arrJplus1);'
+        : '    swap(arr[j], arr[j + 1]);';
+
+    // Dynamic code lines
     List<Map<String, dynamic>> codeLines = [
       {
         'line': 0,
         'text': 'void bubbleSort(List<int> arr, bool ascending) {',
         'indent': 0,
       },
-      {'line': 1, 'text': 'for (int i = 0; i < n - 1; i++) {', 'indent': 1},
-      {'line': 2, 'text': 'for (int j = 0; j < n - i - 1; j++) {', 'indent': 2},
       {
-        'line': 3,
-        'text': 'if (arr[j] ${isAscending ? '>' : '<'} arr[j + 1]) {',
-        'indent': 3,
+        'line': 1,
+        'text': 'for (int i = $iValue; i < $nValue - 1; i++) {',
+        'indent': 1,
       },
-      {'line': 4, 'text': '    swap(arr[j], arr[j + 1]);', 'indent': 3},
+      {
+        'line': 2,
+        'text': 'for (int j = $jValue; j < $nValue - $iValue - 1; j++) {',
+        'indent': 2,
+      },
+      {'line': 3, 'text': 'if ($arrJ $compareOp $arrJplus1) {', 'indent': 3},
+      {'line': 4, 'text': swapText, 'indent': 3},
       {'line': 5, 'text': '}', 'indent': 2},
       {'line': 6, 'text': 'Sorting Complete!', 'indent': 0},
     ];
