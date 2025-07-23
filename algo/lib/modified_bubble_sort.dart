@@ -11,6 +11,8 @@ class ModifiedBubbleSortPage extends StatefulWidget {
 
 class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
     with TickerProviderStateMixin {
+  // Add a defaultNumbers variable for the hardcoded array
+  final List<int> defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
   List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
   List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
 
@@ -43,6 +45,10 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
   bool currentSwapped = false;
   bool isSpeedControlExpanded = false;
 
+  // Add controller and error state for input
+  final TextEditingController _inputController = TextEditingController();
+  String? _inputError;
+
   @override
   void initState() {
     super.initState();
@@ -58,12 +64,14 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
   @override
   void dispose() {
     _animationController.dispose();
+    _inputController.dispose();
     super.dispose();
   }
 
   void resetArray() {
     setState(() {
-      numbers = List.from(originalNumbers);
+      numbers = List.from(defaultNumbers);
+      originalNumbers = List.from(defaultNumbers);
       currentI = -1;
       currentJ = -1;
       comparingIndex1 = -1;
@@ -78,6 +86,8 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
       totalComparisons = 0;
       totalSwaps = 0;
       currentSwapped = false;
+      _inputError = null;
+      _inputController.clear();
     });
   }
 
@@ -125,6 +135,52 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
       currentStep = isAscending
           ? "Array shuffled - Ready to start sorting (Ascending)"
           : "Array shuffled - Ready to start sorting (Descending)";
+      operationIndicator = "";
+      totalComparisons = 0;
+      totalSwaps = 0;
+      currentSwapped = false;
+    });
+  }
+
+  void _setArrayFromInput() {
+    final input = _inputController.text.trim();
+    if (input.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Input required'), duration: Duration(seconds: 2)),
+      );
+      return;
+    }
+    final parts = input.split(',').map((e) => e.trim()).toList();
+    if (parts.length < 2 || parts.length > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter 2-10 numbers'), duration: Duration(seconds: 2)),
+      );
+      return;
+    }
+    final nums = <int>[];
+    for (final part in parts) {
+      final n = int.tryParse(part);
+      if (n == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Only integers allowed'), duration: Duration(seconds: 2)),
+        );
+        return;
+      }
+      nums.add(n);
+    }
+    setState(() {
+      numbers = List.from(nums);
+      originalNumbers = List.from(nums);
+      currentI = -1;
+      currentJ = -1;
+      comparingIndex1 = -1;
+      comparingIndex2 = -1;
+      isSwapping = false;
+      isSorting = false;
+      isSorted = false;
+      shouldStop = false;
+      highlightedLine = -1;
+      currentStep = "Ready to start sorting";
       operationIndicator = "";
       totalComparisons = 0;
       totalSwaps = 0;
@@ -878,6 +934,61 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
         children: [
           Column(
         children: [
+          // Minimal input row above animation area
+          Container(
+            color: Colors.blue.shade50,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 0),
+                  child: Row(
+                    children: [
+                      // Input field
+                      Expanded(
+                        child: TextField(
+                          controller: _inputController,
+                          keyboardType: TextInputType.text,
+                          style: const TextStyle(fontSize: 13),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                            hintText: 'Enter up to 10 numbers (e.g. 5,2,9)',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.grey.shade400),
+                            ),
+                            errorText: null,
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Colors.red),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        height: 36,
+                        child: ElevatedButton(
+                          onPressed: isSorting ? null : _setArrayFromInput,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                            minimumSize: const Size(0, 36),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          child: const Text('Set', style: TextStyle(fontSize: 13)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
           // Animation Area (Top portion)
           Expanded(
             flex: 3,
