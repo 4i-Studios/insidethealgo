@@ -564,8 +564,13 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
+          TextButton.icon(
+            label: const Text(
+              'Guide',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            icon: const Icon(Icons.book, size: 18, color: Colors.white),
+            
             onPressed: () {
               showModalBottomSheet(
                 context: context,
