@@ -31,6 +31,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
   bool isAscending = true; // true for ascending, false for descending
   double speed = 1.0; // Speed multiplier (0.5 = slow, 1.0 = normal, 2.0 = fast)
   bool shouldStop = false; // Flag to stop sorting
+  bool isPaused = false;
 
   // Code highlighting variables
   int highlightedLine = -1; // -1 means no highlight, 0-5 for different lines
@@ -131,10 +132,16 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
     });
   }
 
+  Future<void> _waitIfPaused() async {
+    while (isPaused && mounted) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+  }
+
   Future<void> startBubbleSort() async {
     if (isSorting) return;
 
-    if (!mounted) return;  // Add check before first setState
+    if (!mounted) return;
     setState(() {
       isSorting = true;
       isSorted = false;
@@ -142,28 +149,29 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
       totalComparisons = 0;
       totalSwaps = 0;
       operationIndicator = "";
-      highlightedLine = 0; // Highlight function declaration
+      highlightedLine = 0;
       currentSwapped = false;
     });
 
     int n = numbers.length;
     String orderText = isAscending ? "ascending" : "descending";
 
-    if (!mounted) return;  // Add check
+    if (!mounted) return;
     setState(() {
-      highlightedLine = 1; // Outer for loop
+      highlightedLine = 1;
     });
+    await _waitIfPaused();
     await Future.delayed(Duration(milliseconds: (500 / speed).round()));
 
     for (int i = 0; i < n - 1; i++) {
-      if (shouldStop || !mounted) break;  // Add mounted check
+      if (shouldStop || !mounted) break;
 
-      bool swapped = false; // MODIFIED: Track if any swap happened
+      bool swapped = false;
 
-      if (!mounted) break;  // Add check
+      if (!mounted) break;
       setState(() {
         currentI = i;
-        highlightedLine = 1; // Keep highlighting outer loop
+        highlightedLine = 1;
         currentStep =
             "Pass  ${i + 1}: Finding the ${isAscending ? 'largest' : 'smallest'} element in remaining array";
         operationIndicator =
@@ -171,30 +179,31 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
         currentSwapped = false;
       });
 
+      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (500 / speed).round()));
-      if (shouldStop || !mounted) break;  // Add mounted check
+      if (shouldStop || !mounted) break;
 
-      if (!mounted) break;  // Add check
+      if (!mounted) break;
       setState(() {
-        highlightedLine = 2; // Inner for loop
+        highlightedLine = 2;
       });
+      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (300 / speed).round()));
 
       for (int j = 0; j < n - i - 1; j++) {
-        if (shouldStop || !mounted) break;  // Add mounted check
+        if (shouldStop || !mounted) break;
 
-        // Highlight the inner for loop line and update j
-        if (!mounted) break;  // Add check
+        await _waitIfPaused();
         setState(() {
-          highlightedLine = 3; // inner for loop
-          currentJ = j;  // Update j when highlighting the loop line
+          highlightedLine = 3;
+          currentJ = j;
         });
+        await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (400 / speed).round()));
 
-        // Highlight the if condition and update comparing indices
-        if (!mounted) break;  // Add check
+        await _waitIfPaused();
         setState(() {
-          highlightedLine = 4; // if condition
+          highlightedLine = 4;
           comparingIndex1 = j;
           comparingIndex2 = j + 1;
           currentStep = "Comparing  ${numbers[j]} and  ${numbers[j + 1]}";
@@ -202,32 +211,28 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
               "🔍 Comparing:  ${numbers[j]} vs  ${numbers[j + 1]}";
           totalComparisons++;
         });
+        await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (700 / speed).round()));
-        if (shouldStop || !mounted) break;  // Add mounted check
+        if (shouldStop || !mounted) break;
 
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
             : numbers[j] < numbers[j + 1];
 
         if (shouldSwap) {
-          // Highlight the swap line and prepare for swap
-          if (!mounted) break;  // Add check
+          await _waitIfPaused();
           setState(() {
-            highlightedLine = 5; // swap line
+            highlightedLine = 5;
             isSwapping = true;
             currentStep = "Swapping  ${numbers[j]} and  ${numbers[j + 1]}";
             operationIndicator =
                 "🔄 Swapping:  ${numbers[j]} ↔  ${numbers[j + 1]} (${isAscending ? ' ${numbers[j]} >  ${numbers[j + 1]}' : ' ${numbers[j]} <  ${numbers[j + 1]}'})";
             totalSwaps++;
           });
-
-          // Perform animation and swap at swap() line
           _animationController.duration = Duration(milliseconds: (800 / speed).round());
-          _animationController.forward();
-          await Future.delayed(Duration(milliseconds: (800 / speed).round()));
-          if (shouldStop || !mounted) break;  // Add mounted check
+          await _animationController.forward();
+          if (shouldStop || !mounted) break;
 
-          // Perform the actual swap
           setState(() {
             int temp = numbers[j];
             numbers[j] = numbers[j + 1];
@@ -238,75 +243,80 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           setState(() {
             isSwapping = false;
           });
+          await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (500 / speed).round()));
 
           // Now move to swapped = true line
-          if (!mounted) break;  // Add check
+          await _waitIfPaused();
           setState(() {
-            highlightedLine = 6; // swapped = true line
+            highlightedLine = 6;
             swapped = true;
             currentSwapped = true;
           });
+          await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (400 / speed).round()));
 
-          if (!mounted) break;  // Add check
+          await _waitIfPaused();
           setState(() {
             currentStep =
                 "No swap needed - ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'}";
             operationIndicator =
                 "✓ No swap: ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'} (already in order)";
           });
+          await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
         }
       }
       // After the inner for loop, highlight the swapped comment and if condition
-      if (!mounted) break;  // Add check
+      await _waitIfPaused();
       setState(() {
-        highlightedLine = 9; // swapped comment line
+        highlightedLine = 9;
       });
+      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (400 / speed).round()));
-      if (!mounted) break;  // Add check
+      await _waitIfPaused();
       setState(() {
-        highlightedLine = 10; // if (!swapped) break; line
+        highlightedLine = 10;
       });
+      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (600 / speed).round()));
 
       if (!swapped) {
-        // MODIFIED: If no swaps, array is sorted
-        if (!mounted) break;  // Add check
+        await _waitIfPaused();
         setState(() {
           currentStep =
               "No swaps in this pass. Array is already sorted! Early exit.";
           operationIndicator =
               "🚀 Optimized: Exiting early as array is sorted.";
         });
+        await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (1200 / speed).round()));
         break;
       }
     }
 
-    if (mounted) {  // Final state update
-    setState(() {
-      currentI = -1;
-      currentJ = -1;
-      comparingIndex1 = -1;
-      comparingIndex2 = -1;
-      isSorting = false;
-      highlightedLine = -1; // Clear highlight
-      currentSwapped = false;
+    if (mounted) {
+      setState(() {
+        currentI = -1;
+        currentJ = -1;
+        comparingIndex1 = -1;
+        comparingIndex2 = -1;
+        isSorting = false;
+        highlightedLine = -1;
+        currentSwapped = false;
 
-      if (shouldStop) {
-        currentStep = "Sorting stopped by user";
-        operationIndicator = "⏹️ Sorting was interrupted";
-      } else {
-        isSorted = true;
-        highlightedLine = 6; // Completed state
-        currentStep =
-            "Sorting completed! Array is now sorted in $orderText order.";
-        operationIndicator =
-            "🎉 Sorting Complete! All elements are in $orderText order";
-      }
-    });
+        if (shouldStop) {
+          currentStep = "Sorting stopped by user";
+          operationIndicator = "⏹️ Sorting was interrupted";
+        } else {
+          isSorted = true;
+          highlightedLine = 6;
+          currentStep =
+              "Sorting completed! Array is now sorted in $orderText order.";
+          operationIndicator =
+              "🎉 Sorting Complete! All elements are in $orderText order";
+        }
+      });
     }
   }
 
@@ -1153,6 +1163,19 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
                                           icon: Icons.shuffle,
                                           label: 'Shuffle',
                                           color: Colors.purple,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        _buildControlButton(
+                                          onPressed: isSorting
+                                              ? () {
+                                                  setState(() {
+                                                    isPaused = !isPaused;
+                                                  });
+                                                }
+                                              : null,
+                                          icon: isPaused ? Icons.play_arrow : Icons.pause,
+                                          label: isPaused ? 'Play' : 'Pause',
+                                          color: Colors.blueGrey,
                                         ),
                                       ],
                                     ),
