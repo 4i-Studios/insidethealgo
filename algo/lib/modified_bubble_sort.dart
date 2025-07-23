@@ -132,6 +132,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
   Future<void> startBubbleSort() async {
     if (isSorting) return;
 
+    if (!mounted) return;  // Add check before first setState
     setState(() {
       isSorting = true;
       isSorted = false;
@@ -146,16 +147,18 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
     int n = numbers.length;
     String orderText = isAscending ? "ascending" : "descending";
 
+    if (!mounted) return;  // Add check
     setState(() {
       highlightedLine = 1; // Outer for loop
     });
     await Future.delayed(Duration(milliseconds: (500 / speed).round()));
 
     for (int i = 0; i < n - 1; i++) {
-      if (shouldStop) break;
+      if (shouldStop || !mounted) break;  // Add mounted check
 
       bool swapped = false; // MODIFIED: Track if any swap happened
 
+      if (!mounted) break;  // Add check
       setState(() {
         currentI = i;
         highlightedLine = 1; // Keep highlighting outer loop
@@ -167,17 +170,19 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
       });
 
       await Future.delayed(Duration(milliseconds: (500 / speed).round()));
-      if (shouldStop) break;
+      if (shouldStop || !mounted) break;  // Add mounted check
 
+      if (!mounted) break;  // Add check
       setState(() {
         highlightedLine = 2; // Inner for loop
       });
       await Future.delayed(Duration(milliseconds: (300 / speed).round()));
 
       for (int j = 0; j < n - i - 1; j++) {
-        if (shouldStop) break;
+        if (shouldStop || !mounted) break;  // Add mounted check
 
         // Highlight the inner for loop line and update j
+        if (!mounted) break;  // Add check
         setState(() {
           highlightedLine = 3; // inner for loop
           currentJ = j;  // Update j when highlighting the loop line
@@ -185,6 +190,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
         await Future.delayed(Duration(milliseconds: (400 / speed).round()));
 
         // Highlight the if condition and update comparing indices
+        if (!mounted) break;  // Add check
         setState(() {
           highlightedLine = 4; // if condition
           comparingIndex1 = j;
@@ -195,7 +201,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           totalComparisons++;
         });
         await Future.delayed(Duration(milliseconds: (700 / speed).round()));
-        if (shouldStop) break;
+        if (shouldStop || !mounted) break;  // Add mounted check
 
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
@@ -203,6 +209,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
 
         if (shouldSwap) {
           // Highlight the swap line and prepare for swap
+          if (!mounted) break;  // Add check
           setState(() {
             highlightedLine = 5; // swap line
             isSwapping = true;
@@ -215,7 +222,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           // Perform animation and swap at swap() line
           _animationController.forward();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
-          if (shouldStop) break;
+          if (shouldStop || !mounted) break;  // Add mounted check
 
           // Perform the actual swap
           setState(() {
@@ -231,6 +238,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           await Future.delayed(Duration(milliseconds: (500 / speed).round()));
 
           // Now move to swapped = true line
+          if (!mounted) break;  // Add check
           setState(() {
             highlightedLine = 6; // swapped = true line
             swapped = true;
@@ -238,6 +246,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           });
           await Future.delayed(Duration(milliseconds: (400 / speed).round()));
 
+          if (!mounted) break;  // Add check
           setState(() {
             currentStep =
                 "No swap needed - ${isAscending ? ' ${numbers[j]} ≤  ${numbers[j + 1]}' : ' ${numbers[j]} ≥  ${numbers[j + 1]}'}";
@@ -248,10 +257,12 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
         }
       }
       // After the inner for loop, highlight the swapped comment and if condition
+      if (!mounted) break;  // Add check
       setState(() {
         highlightedLine = 9; // swapped comment line
       });
       await Future.delayed(Duration(milliseconds: (400 / speed).round()));
+      if (!mounted) break;  // Add check
       setState(() {
         highlightedLine = 10; // if (!swapped) break; line
       });
@@ -259,6 +270,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
 
       if (!swapped) {
         // MODIFIED: If no swaps, array is sorted
+        if (!mounted) break;  // Add check
         setState(() {
           currentStep =
               "No swaps in this pass. Array is already sorted! Early exit.";
@@ -270,27 +282,29 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
       }
     }
 
-    setState(() {
-      currentI = -1;
-      currentJ = -1;
-      comparingIndex1 = -1;
-      comparingIndex2 = -1;
-      isSorting = false;
-      highlightedLine = -1; // Clear highlight
-      currentSwapped = false;
+    if (mounted) {  // Final state update
+      setState(() {
+        currentI = -1;
+        currentJ = -1;
+        comparingIndex1 = -1;
+        comparingIndex2 = -1;
+        isSorting = false;
+        highlightedLine = -1; // Clear highlight
+        currentSwapped = false;
 
-      if (shouldStop) {
-        currentStep = "Sorting stopped by user";
-        operationIndicator = "⏹️ Sorting was interrupted";
-      } else {
-        isSorted = true;
-        highlightedLine = 6; // Completed state
-        currentStep =
-            "Sorting completed! Array is now sorted in $orderText order.";
-        operationIndicator =
-            "🎉 Sorting Complete! All elements are in $orderText order";
-      }
-    });
+        if (shouldStop) {
+          currentStep = "Sorting stopped by user";
+          operationIndicator = "⏹️ Sorting was interrupted";
+        } else {
+          isSorted = true;
+          highlightedLine = 6; // Completed state
+          currentStep =
+              "Sorting completed! Array is now sorted in $orderText order.";
+          operationIndicator =
+              "🎉 Sorting Complete! All elements are in $orderText order";
+        }
+      });
+    }
   }
 
   Color getBarColor(int index) {
