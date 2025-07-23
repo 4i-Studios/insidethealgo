@@ -222,6 +222,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           });
 
           // Perform animation and swap at swap() line
+          _animationController.duration = Duration(milliseconds: (800 / speed).round());
           _animationController.forward();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
           if (shouldStop || !mounted) break;  // Add mounted check

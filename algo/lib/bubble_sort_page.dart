@@ -214,7 +214,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                 "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
             totalSwaps++;
           });
-
+          _animationController.duration = Duration(milliseconds: (800 / speed).round());
           _animationController.forward();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
           if (shouldStop || !mounted) break;  // Add mounted check
