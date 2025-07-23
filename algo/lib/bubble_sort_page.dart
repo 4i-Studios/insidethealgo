@@ -316,8 +316,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         } else {
           isSorted = true;
           highlightedLine = 6;
-          currentStep =
-              "Sorting completed! Array is now sorted in $orderText order.";
+          currentStep = "";
           operationIndicator =
               "🎉 Sorting Complete! All elements are in $orderText order";
         }
@@ -932,30 +931,28 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                     ),
                     child: Column(
                       children: [
-                        Text(
-                          currentStep,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        if (operationIndicator.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            operationIndicator,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isSwapping
-                                  ? Colors.red.shade800
-                                  : comparingIndex1 >= 0
-                                      ? Colors.orange.shade800
-                                      : Colors.blue.shade800,
+                        operationIndicator.isNotEmpty
+                          ? Text(
+                              operationIndicator,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: isSwapping
+                                    ? Colors.red.shade800
+                                    : comparingIndex1 >= 0
+                                        ? Colors.orange.shade800
+                                        : Colors.blue.shade800,
+                              ),
+                              textAlign: TextAlign.center,
+                            )
+                          : Text(
+                              currentStep,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
                       ],
                     ),
                   ),
@@ -970,13 +967,36 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Code Display Section
-                    const Text(
-                      'Algorithm Code:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Algorithm Code:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: isSorting ? null : toggleSortOrder,
+                          icon: Icon(
+                            isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                            size: 18,
+                          ),
+                          label: Text(isAscending ? 'Ascending' : 'Descending'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isAscending ? Colors.blue : Colors.indigo,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 8,
+                            ),
+                            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     _buildCodeDisplay(),
@@ -1040,27 +1060,6 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                         color: Colors.purple,
                                       ),
                                     ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  // Sort Order Button - Centered
-                                  Center(
-                                    child: ElevatedButton.icon(
-                                      onPressed: isSorting ? null : toggleSortOrder,
-                                      icon: Icon(
-                                        isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                                        size: 18,
-                                      ),
-                                      label: Text(isAscending ? 'Ascending' : 'Descending'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: isAscending ? Colors.blue : Colors.indigo,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 18,
-                                          vertical: 8,
-                                        ),
-                                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),
