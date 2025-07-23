@@ -291,7 +291,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     if (index == comparingIndex1 || index == comparingIndex2) {
       return Colors.orange;
     }
-    if (currentI >= 0 && index >= numbers.length - currentI - 1) {
+    if (currentI >= 0 && index >= numbers.length - currentI) {
       return Colors.green.shade300;
     }
     return Colors.blue;
