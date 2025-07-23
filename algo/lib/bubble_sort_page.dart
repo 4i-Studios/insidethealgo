@@ -134,9 +134,12 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   }
 
   Future<void> startBubbleSort() async {
-    if (isSorting) return;
-
-    if (!mounted) return;
+    if (isSorting) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
     setState(() {
       isSorting = true;
       isSorted = false;
@@ -146,21 +149,26 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       operationIndicator = "";
       highlightedLine = 0;
     });
-
     int n = numbers.length;
     String orderText = isAscending ? "ascending" : "descending";
-
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() {
       highlightedLine = 1;
     });
     await _waitIfPaused();
     await Future.delayed(Duration(milliseconds: (500 / speed).round()));
-
+    if (!mounted) {
+      return;
+    }
     for (int i = 0; i < n - 1; i++) {
-      if (shouldStop || !mounted) break;
-
-      if (!mounted) break;
+      if (shouldStop || !mounted) {
+        break;
+      }
+      if (!mounted) {
+        break;
+      }
       setState(() {
         currentI = i;
         highlightedLine = 1;
@@ -169,29 +177,39 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         operationIndicator =
             "Starting pass ${i + 1} of ${n - 1} ($orderText order)";
       });
-
       await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (500 / speed).round()));
-      if (shouldStop || !mounted) break;
-
-      if (!mounted) break;
+      if (shouldStop || !mounted) {
+        break;
+      }
+      if (!mounted) {
+        break;
+      }
       setState(() {
         highlightedLine = 2;
       });
       await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (300 / speed).round()));
-
+      if (!mounted) {
+        break;
+      }
       for (int j = 0; j < n - i - 1; j++) {
-        if (shouldStop || !mounted) break;
-
+        if (shouldStop || !mounted) {
+          break;
+        }
         await _waitIfPaused();
+        if (!mounted) {
+          break;
+        }
         setState(() {
           highlightedLine = 2;
           currentJ = j;
         });
         await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (400 / speed).round()));
-
+        if (!mounted) {
+          break;
+        }
         await _waitIfPaused();
         setState(() {
           highlightedLine = 3;
@@ -202,17 +220,19 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               "🔍 Comparing: ${numbers[j]} vs ${numbers[j + 1]}";
           totalComparisons++;
         });
-
         await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
-        if (shouldStop || !mounted) break;
-
+        if (shouldStop || !mounted) {
+          break;
+        }
         bool shouldSwap = isAscending
             ? numbers[j] > numbers[j + 1]
             : numbers[j] < numbers[j + 1];
-
         if (shouldSwap) {
           await _waitIfPaused();
+          if (!mounted) {
+            break;
+          }
           setState(() {
             highlightedLine = 4;
             isSwapping = true;
@@ -223,24 +243,34 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           });
           _animationController.duration = Duration(milliseconds: (800 / speed).round());
           await _animationController.forward();
-          if (shouldStop || !mounted) break;
-
-          if (!mounted) break;
+          if (shouldStop || !mounted) {
+            break;
+          }
+          if (!mounted) {
+            break;
+          }
           setState(() {
             int temp = numbers[j];
             numbers[j] = numbers[j + 1];
             numbers[j + 1] = temp;
           });
-
           _animationController.reset();
+          if (!mounted) {
+            break;
+          }
           setState(() {
             isSwapping = false;
           });
-
           await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (300 / speed).round()));
+          if (!mounted) {
+            break;
+          }
         } else {
           await _waitIfPaused();
+          if (!mounted) {
+            break;
+          }
           setState(() {
             currentStep =
                 "No swap needed - ${isAscending ? '${numbers[j]} ≤ ${numbers[j + 1]}' : '${numbers[j]} ≥ ${numbers[j + 1]}'}";
@@ -249,11 +279,14 @@ class _BubbleSortPageState extends State<BubbleSortPage>
           });
           await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
+          if (!mounted) {
+            break;
+          }
         }
       }
-
-      if (shouldStop || !mounted) break;
-
+      if (shouldStop || !mounted) {
+        break;
+      }
       if (mounted) {
         setState(() {
           highlightedLine = 5;
@@ -264,9 +297,11 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         });
         await _waitIfPaused();
         await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+        if (!mounted) {
+          break;
+        }
       }
     }
-
     if (mounted) {
       setState(() {
         currentI = -1;
@@ -275,7 +310,6 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         comparingIndex2 = -1;
         isSorting = false;
         highlightedLine = -1;
-
         if (shouldStop) {
           currentStep = "Sorting stopped by user";
           operationIndicator = "⏹️ Sorting was interrupted";
@@ -958,62 +992,56 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                           Card(
                             elevation: 2,
                             child: Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(12), // reduced padding
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  // Action Buttons Row
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        _buildControlButton(
-                                          onPressed: isSorting ? null : startBubbleSort,
-                                          icon: Icons.play_arrow,
-                                          label: 'Start Sort',
-                                          color: Colors.green,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        _buildControlButton(
-                                          onPressed: isSorting ? stopSorting : null,
-                                          icon: Icons.stop,
-                                          label: 'Stop',
-                                          color: Colors.red,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        _buildControlButton(
-                                          onPressed: isSorting ? null : resetArray,
-                                          icon: Icons.refresh,
-                                          label: 'Reset',
-                                          color: Colors.orange,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        _buildControlButton(
-                                          onPressed: isSorting ? null : shuffleArray,
-                                          icon: Icons.shuffle,
-                                          label: 'Shuffle',
-                                          color: Colors.purple,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        _buildControlButton(
-                                          onPressed: isSorting
-                                              ? () {
-                                                  setState(() {
-                                                    isPaused = !isPaused;
-                                                  });
-                                                }
-                                              : null,
-                                          icon: isPaused ? Icons.play_arrow : Icons.pause,
-                                          label: isPaused ? 'Play' : 'Pause',
-                                          color: Colors.blueGrey,
-                                        ),
-                                      ],
-                                    ),
+                                  // Action Buttons Grid
+                                  GridView.count(
+                                    crossAxisCount: 3,
+                                    shrinkWrap: true,
+                                    mainAxisSpacing: 8,
+                                    crossAxisSpacing: 8,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    childAspectRatio: 2.2,
+                                    children: [
+                                      _buildControlButton(
+                                        onPressed: isSorting
+                                            ? () {
+                                                setState(() {
+                                                  isPaused = !isPaused;
+                                                });
+                                              }
+                                            : startBubbleSort,
+                                        icon: isSorting
+                                            ? (isPaused ? Icons.play_arrow : Icons.pause)
+                                            : Icons.play_arrow,
+                                        label: isSorting
+                                            ? (isPaused ? 'Play' : 'Pause')
+                                            : 'Start',
+                                        color: Colors.green,
+                                      ),
+                                      _buildControlButton(
+                                        onPressed: isSorting ? stopSorting : null,
+                                        icon: Icons.stop,
+                                        label: 'Stop',
+                                        color: Colors.red,
+                                      ),
+                                      _buildControlButton(
+                                        onPressed: isSorting ? null : resetArray,
+                                        icon: Icons.refresh,
+                                        label: 'Reset',
+                                        color: Colors.orange,
+                                      ),
+                                      _buildControlButton(
+                                        onPressed: isSorting ? null : shuffleArray,
+                                        icon: Icons.shuffle,
+                                        label: 'Shuffle',
+                                        color: Colors.purple,
+                                      ),
+                                    ],
                                   ),
-
-                                  const SizedBox(height: 16),
-
+                                  const SizedBox(height: 12),
                                   // Sort Order Button - Centered
                                   Center(
                                     child: ElevatedButton.icon(
@@ -1027,9 +1055,10 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                                         backgroundColor: isAscending ? Colors.blue : Colors.indigo,
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 12,
+                                          horizontal: 18,
+                                          vertical: 8,
                                         ),
+                                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                                       ),
                                     ),
                                   ),
@@ -1109,18 +1138,18 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   }) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
+      icon: Icon(icon, size: 16),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        minimumSize: const Size(0, 36),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }
