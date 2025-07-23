@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'widgets/expandable_speed_control.dart';
 
 class ModifiedBubbleSortPage extends StatefulWidget {
   const ModifiedBubbleSortPage({super.key});
@@ -39,6 +40,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
 
   // In the State class, add a new variable to track swapped for UI
   bool currentSwapped = false;
+  bool isSpeedControlExpanded = false;
 
   @override
   void initState() {
@@ -283,27 +285,27 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
     }
 
     if (mounted) {  // Final state update
-      setState(() {
-        currentI = -1;
-        currentJ = -1;
-        comparingIndex1 = -1;
-        comparingIndex2 = -1;
-        isSorting = false;
-        highlightedLine = -1; // Clear highlight
-        currentSwapped = false;
+    setState(() {
+      currentI = -1;
+      currentJ = -1;
+      comparingIndex1 = -1;
+      comparingIndex2 = -1;
+      isSorting = false;
+      highlightedLine = -1; // Clear highlight
+      currentSwapped = false;
 
-        if (shouldStop) {
-          currentStep = "Sorting stopped by user";
-          operationIndicator = "⏹️ Sorting was interrupted";
-        } else {
-          isSorted = true;
-          highlightedLine = 6; // Completed state
-          currentStep =
-              "Sorting completed! Array is now sorted in $orderText order.";
-          operationIndicator =
-              "🎉 Sorting Complete! All elements are in $orderText order";
-        }
-      });
+      if (shouldStop) {
+        currentStep = "Sorting stopped by user";
+        operationIndicator = "⏹️ Sorting was interrupted";
+      } else {
+        isSorted = true;
+        highlightedLine = 6; // Completed state
+        currentStep =
+            "Sorting completed! Array is now sorted in $orderText order.";
+        operationIndicator =
+            "🎉 Sorting Complete! All elements are in $orderText order";
+      }
+    });
     }
   }
 
@@ -335,8 +337,8 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
   Widget _buildCodeDisplay() {
     int n = numbers.length;
     // Prepare dynamic values for code simulation
-    String iValue = currentI >= 0 ? '$currentI' : 'i';
-    String jValue = currentJ >= 0 ? '$currentJ' : 'j';
+    String iValue = currentI >= 0 ? '$currentI' : '0';
+    String jValue = currentJ >= 0 ? '$currentJ' : '0';
     String nValue = '$n';
     String nMinus1Value = '${n - 1}';
     String nMinusIValue = currentI >= 0 ? '${n - currentI}' : 'n - i';
@@ -527,72 +529,72 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: IntrinsicWidth(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: codeLines.map((codeLine) {
-                    if (codeLine['line'] == 12 && !isSorted) {
-                      return const SizedBox.shrink(); // Don't show completion line until sorted
-                    }
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: codeLines.map((codeLine) {
+                  if (codeLine['line'] == 12 && !isSorted) {
+                    return const SizedBox.shrink(); // Don't show completion line until sorted
+                  }
 
-                    bool isHighlighted = highlightedLine == codeLine['line'];
+                  bool isHighlighted = highlightedLine == codeLine['line'];
 
-                    return Container(
-                      constraints: BoxConstraints(
+                  return Container(
+                    constraints: BoxConstraints(
                         minWidth: MediaQuery.of(context).size.width - 32,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
-                        horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
-                      ),
-                      margin: EdgeInsets.symmetric(
-                        vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
-                      ),
-                      decoration: BoxDecoration(
-                        color: isHighlighted
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
+                      horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
+                    ),
+                    margin: EdgeInsets.symmetric(
+                      vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
+                    ),
+                    decoration: BoxDecoration(
+                      color: isHighlighted
                             ? const Color(0xFF264F78).withOpacity(0.8)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(3),
-                        border: isHighlighted
-                            ? Border.all(color: const Color(0xFF0E639C), width: 1)
-                            : null,
-                      ),
-                      child: Row(
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(3),
+                      border: isHighlighted
+                          ? Border.all(color: const Color(0xFF0E639C), width: 1)
+                          : null,
+                    ),
+                    child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Line number
-                          SizedBox(
-                            width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
-                            child: Text(
-                              '${codeLine['line'] + 1}',
-                              style: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                                fontFamily: 'monospace',
-                              ),
+                      children: [
+                        // Line number
+                        SizedBox(
+                          width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
+                          child: Text(
+                            '${codeLine['line'] + 1}',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                              fontFamily: 'monospace',
                             ),
                           ),
-                          SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
-                          // Indentation
-                          SizedBox(
-                            width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12),
-                          ),
-                          // Code text
+                        ),
+                        SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
+                        // Indentation
+                        SizedBox(
+                          width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12),
+                        ),
+                        // Code text
                           Flexible(
                             fit: FlexFit.loose,
-                            child: Text(
-                              codeLine['text'],
-                              style: TextStyle(
-                                color: isHighlighted ? Colors.white : _getCodeTextColor(codeLine['text']),
-                                fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                                fontFamily: 'monospace',
-                                fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
-                              ),
+                          child: Text(
+                            codeLine['text'],
+                            style: TextStyle(
+                              color: isHighlighted ? Colors.white : _getCodeTextColor(codeLine['text']),
+                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                              fontFamily: 'monospace',
+                              fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
                 ),
               ),
             ),
@@ -822,7 +824,10 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Column(
         children: [
           // Animation Area (Top portion)
           Expanded(
@@ -842,21 +847,21 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
                   // Color Legend
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildColorLegend(Colors.blue, 'Unsorted'),
-                          const SizedBox(width: 16),
-                          _buildColorLegend(Colors.orange, 'Comparing'),
-                          const SizedBox(width: 16),
-                          _buildColorLegend(Colors.red, 'Swapping'),
-                          const SizedBox(width: 16),
-                          _buildColorLegend(Colors.green, 'Sorted'),
-                        ],
-                      ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildColorLegend(Colors.blue, 'Unsorted'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.orange, 'Comparing'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.red, 'Swapping'),
+                        const SizedBox(width: 16),
+                        _buildColorLegend(Colors.green, 'Sorted'),
+                      ],
+                          ),
                     ),
                   ),
 
@@ -867,7 +872,7 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildStatusChip(
                               'Pass',
@@ -1191,76 +1196,38 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
                           const SizedBox(height: 16),
 
                           // Speed Control Card
-                          Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.speed, size: 20),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Animation Speed: ${speed.toStringAsFixed(1)}x',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Slider(
-                                    value: speed,
-                                    min: 0.5,
-                                    max: 3.0,
-                                    divisions: 5,
-                                    onChanged: isSorting ? null : updateSpeed,
-                                    activeColor: Colors.blue,
-                                    inactiveColor: Colors.grey.shade300,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Slow',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Fast',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          //     ExpandableSpeedControl(
+                          //       speed: speed,
+                          //       onSpeedChanged: updateSpeed,
+                          //       isExpanded: isSpeedControlExpanded,
+                          //       onTap: () {
+                          //         setState(() {
+                          //           isSpeedControlExpanded = !isSpeedControlExpanded;
+                          //         });
+                          //       },
+                          // ),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 20),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-            ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                  ),
+                                  ),
+                                ),
+                              ],
+                            ),
+          ExpandableSpeedControl(
+            speed: speed,
+            onSpeedChanged: updateSpeed,
+            isExpanded: isSpeedControlExpanded,
+            onTap: () {
+              setState(() {
+                isSpeedControlExpanded = !isSpeedControlExpanded;
+              });
+            },
           ),
         ],
       ),
@@ -1281,10 +1248,10 @@ class _ModifiedBubbleSortPageState extends State<ModifiedBubbleSortPage>
           Text(
             '$label: ',
             style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
           ),
           Text(
             value,
