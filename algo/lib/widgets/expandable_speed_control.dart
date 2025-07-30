@@ -39,23 +39,44 @@ class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
   late AnimationController _controller;
   late Animation<double> _expandAnimation;
   late Animation<double> _buttonAnimation;
+  late List<Animation<double>> _buttonStaggeredAnimations;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(
+        milliseconds: 600,
+      ), // Increased duration for smoother animation
       vsync: this,
     );
     _expandAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
     );
-    // Button animation starts after speed control expands
+
+    // Main button animation with bounce effect
     _buttonAnimation = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+      curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
     );
+
+    // Create staggered animations for each button
+    _buttonStaggeredAnimations = List.generate(4, (index) {
+      // Reverse the index so bottom button (index 3) starts first
+      int reversedIndex = 3 - index;
+      double startInterval =
+          0.3 + (reversedIndex * 0.1); // Bottom button starts first
+      double endInterval = startInterval + 0.25; // Shorter, snappier animation
+      return CurvedAnimation(
+        parent: _controller,
+        curve: Interval(
+          startInterval,
+          endInterval.clamp(0.0, 1.0),
+          curve: Curves.easeOutQuart, // Smooth, elegant curve
+        ),
+      );
+    });
   }
 
   @override
@@ -90,52 +111,69 @@ class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
             children: [
               // Action Buttons (appear above speed control)
               if (widget.actionButtons.isNotEmpty && _buttonAnimation.value > 0)
-                ...widget.actionButtons.map((button) {
+                ...widget.actionButtons.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  ActionButton button = entry.value;
+
+                  // Get the staggered animation for this specific button
+                  Animation<double> staggeredAnimation =
+                      _buttonStaggeredAnimations[index];
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Transform.scale(
-                      scale: 0.8 + (_buttonAnimation.value * 0.2),
+                      // Simple scale animation - button grows from 0 to 1
+                      scale: staggeredAnimation.value.clamp(0.0, 1.0),
                       child: Opacity(
-                        opacity: _buttonAnimation.value,
-                        child: SizedBox(
-                          width: 120,
-                          height: 40,
-                          child: ElevatedButton.icon(
-                            onPressed: button.onPressed, // Now functional!
-                            icon: Icon(button.icon, size: 16),
-                            label: Text(
-                              button.label,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: button.onPressed != null
-                                  ? button.color
-                                  : button.color.withOpacity(
-                                      0.6,
-                                    ), // Muted but visible when disabled
-                              foregroundColor: button.onPressed != null
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(
-                                      0.7,
-                                    ), // Slightly muted text when disabled
-                              disabledBackgroundColor: button.color.withOpacity(
-                                0.6,
-                              ), // Explicitly set disabled color
-                              disabledForegroundColor: Colors.white.withOpacity(
-                                0.7,
-                              ), // Explicitly set disabled text color
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
+                        // Simple fade in
+                        opacity: staggeredAnimation.value.clamp(0.0, 1.0),
+                        child: Container(
+                          // Add subtle shadow and glow effect
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: staggeredAnimation.value > 0.5
+                                ? [
+                                    BoxShadow(
+                                      color: button.color.withOpacity(0.3),
+                                      blurRadius: (8 * staggeredAnimation.value)
+                                          .clamp(0.0, 8.0),
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: SizedBox(
+                            width: 120,
+                            height: 40,
+                            child: ElevatedButton.icon(
+                              onPressed: button.onPressed,
+                              icon: Icon(button.icon, size: 16),
+                              label: Text(
+                                button.label,
+                                style: const TextStyle(fontSize: 12),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: button.onPressed != null
+                                    ? button.color
+                                    : button.color.withOpacity(0.6),
+                                foregroundColor: button.onPressed != null
+                                    ? Colors.white
+                                    : Colors.white.withOpacity(0.7),
+                                disabledBackgroundColor: button.color
+                                    .withOpacity(0.6),
+                                disabledForegroundColor: Colors.white
+                                    .withOpacity(0.7),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                                elevation: button.onPressed != null ? 4 : 2,
                               ),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
-                              elevation: button.onPressed != null
-                                  ? 4
-                                  : 2, // Less shadow when disabled
                             ),
                           ),
                         ),
@@ -225,12 +263,36 @@ class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
                             onTap: widget.onTap,
                             customBorder: const CircleBorder(),
                             child: Center(
-                              child: AnimatedRotation(
-                                duration: const Duration(milliseconds: 300),
-                                turns: widget.isExpanded ? 0.5 : 0,
-                                child: const Icon(
-                                  Icons.speed,
-                                  color: Colors.white,
+                              child: Transform.scale(
+                                scale:
+                                    1.0 +
+                                    (_expandAnimation.value *
+                                        0.1), // Subtle pulse effect
+                                child: AnimatedRotation(
+                                  duration: const Duration(milliseconds: 600),
+                                  turns: widget.isExpanded
+                                      ? 0.75
+                                      : 0, // More dramatic rotation
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    transitionBuilder: (child, animation) {
+                                      return RotationTransition(
+                                        turns: animation,
+                                        child: ScaleTransition(
+                                          scale: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: Icon(
+                                      widget.isExpanded
+                                          ? Icons.close
+                                          : Icons.speed,
+                                      key: ValueKey(widget.isExpanded),
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
