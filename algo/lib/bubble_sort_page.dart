@@ -12,7 +12,18 @@ class BubbleSortPage extends StatefulWidget {
 class _BubbleSortPageState extends State<BubbleSortPage>
     with TickerProviderStateMixin {
   // Add a defaultNumbers variable for the hardcoded array
-  final List<int> defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
+  final List<int> defaultNumbers = const [
+    64,
+    34,
+    25,
+    12,
+    22,
+    11,
+    90,
+    88,
+    76,
+    50,
+  ];
   List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
   List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
 
@@ -63,14 +74,20 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     final input = _inputController.text.trim();
     if (input.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Input required'), duration: Duration(seconds: 2)),
+        const SnackBar(
+          content: Text('Input required'),
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
     final parts = input.split(',').map((e) => e.trim()).toList();
     if (parts.length < 2 || parts.length > 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter 2-10 numbers'), duration: Duration(seconds: 2)),
+        const SnackBar(
+          content: Text('Enter 2-10 numbers'),
+          duration: Duration(seconds: 2),
+        ),
       );
       return;
     }
@@ -79,7 +96,10 @@ class _BubbleSortPageState extends State<BubbleSortPage>
       final n = int.tryParse(part);
       if (n == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Only integers allowed'), duration: Duration(seconds: 2)),
+          const SnackBar(
+            content: Text('Only integers allowed'),
+            duration: Duration(seconds: 2),
+          ),
         );
         return;
       }
@@ -296,7 +316,9 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                 "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
             totalSwaps++;
           });
-          _animationController.duration = Duration(milliseconds: (800 / speed).round());
+          _animationController.duration = Duration(
+            milliseconds: (800 / speed).round(),
+          );
           await _animationController.forward();
           if (shouldStop || !mounted) {
             break;
@@ -394,7 +416,8 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   }
 
   // Add helper method for responsive sizes
-  double _getResponsiveSize(BuildContext context, {
+  double _getResponsiveSize(
+    BuildContext context, {
     required double defaultSize,
     required double minSize,
     double? maxSize,
@@ -523,72 +546,115 @@ class _BubbleSortPageState extends State<BubbleSortPage>
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: IntrinsicWidth(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: codeLines.map((codeLine) {
-                  if (codeLine['line'] == 6 && !isSorted) {
-                    return const SizedBox.shrink(); // Don't show completion line until sorted
-                  }
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: codeLines.map((codeLine) {
+                    if (codeLine['line'] == 6 && !isSorted) {
+                      return const SizedBox.shrink(); // Don't show completion line until sorted
+                    }
 
-                  bool isHighlighted = highlightedLine == codeLine['line'];
+                    bool isHighlighted = highlightedLine == codeLine['line'];
 
-                  return Container(
-                    constraints: BoxConstraints(
-                      minWidth: MediaQuery.of(context).size.width - 32,
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
-                      horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
-                    ),
-                    margin: EdgeInsets.symmetric(
-                      vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
-                    ),
-                    decoration: BoxDecoration(
-                      color: isHighlighted
+                    return Container(
+                      constraints: BoxConstraints(
+                        minWidth: MediaQuery.of(context).size.width - 32,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: _getResponsiveSize(
+                          context,
+                          defaultSize: 2,
+                          minSize: 1,
+                        ),
+                        horizontal: _getResponsiveSize(
+                          context,
+                          defaultSize: 4,
+                          minSize: 2,
+                        ),
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        vertical: _getResponsiveSize(
+                          context,
+                          defaultSize: 1,
+                          minSize: 0.5,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: isHighlighted
                             ? const Color(0xFF264F78).withOpacity(0.8)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(3),
-                      border: isHighlighted
-                          ? Border.all(color: const Color(0xFF0E639C), width: 1)
-                          : null,
-                    ),
-                    child: Row(
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(3),
+                        border: isHighlighted
+                            ? Border.all(
+                                color: const Color(0xFF0E639C),
+                                width: 1,
+                              )
+                            : null,
+                      ),
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Line number
-                        SizedBox(
-                          width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
-                          child: Text(
-                            '${codeLine['line'] + 1}',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                              fontFamily: 'monospace',
+                        children: [
+                          // Line number
+                          SizedBox(
+                            width: _getResponsiveSize(
+                              context,
+                              defaultSize: 24,
+                              minSize: 20,
+                            ),
+                            child: Text(
+                              '${codeLine['line'] + 1}',
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: _getResponsiveSize(
+                                  context,
+                                  defaultSize: 12,
+                                  minSize: 10,
+                                ),
+                                fontFamily: 'monospace',
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
-                        // Indentation
-                        SizedBox(
-                          width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12),
-                        ),
-                        // Code text
+                          SizedBox(
+                            width: _getResponsiveSize(
+                              context,
+                              defaultSize: 8,
+                              minSize: 4,
+                            ),
+                          ),
+                          // Indentation
+                          SizedBox(
+                            width:
+                                codeLine['indent'] *
+                                _getResponsiveSize(
+                                  context,
+                                  defaultSize: 16,
+                                  minSize: 12,
+                                ),
+                          ),
+                          // Code text
                           Flexible(
                             fit: FlexFit.loose,
-                          child: Text(
-                            codeLine['text'],
-                            style: TextStyle(
-                                color: isHighlighted ? Colors.white : _getCodeTextColor(codeLine['text']),
-                              fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                              fontFamily: 'monospace',
-                                fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
+                            child: Text(
+                              codeLine['text'],
+                              style: TextStyle(
+                                color: isHighlighted
+                                    ? Colors.white
+                                    : _getCodeTextColor(codeLine['text']),
+                                fontSize: _getResponsiveSize(
+                                  context,
+                                  defaultSize: 12,
+                                  minSize: 10,
+                                ),
+                                fontFamily: 'monospace',
+                                fontWeight: isHighlighted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -625,7 +691,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               style: TextStyle(color: Colors.white, fontSize: 14),
             ),
             icon: const Icon(Icons.book, size: 18, color: Colors.white),
-            
+
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -638,7 +704,9 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                   builder: (_, controller) => Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                     ),
                     padding: const EdgeInsets.all(16),
                     child: SingleChildScrollView(
@@ -661,7 +729,11 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                           // Title
                           Row(
                             children: [
-                              Icon(Icons.sort, color: Colors.blue.shade700, size: 24),
+                              Icon(
+                                Icons.sort,
+                                color: Colors.blue.shade700,
+                                size: 24,
+                              ),
                               const SizedBox(width: 8),
                               const Text(
                                 'Bubble Sort Algorithm',
@@ -674,11 +746,15 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                             ],
                           ),
                           const Divider(height: 24),
-                          
+
                           // How it Works Section
                           Row(
                             children: [
-                              Icon(Icons.tips_and_updates, color: Colors.orange.shade700, size: 20),
+                              Icon(
+                                Icons.tips_and_updates,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               const Text(
                                 'How it Works:',
@@ -699,21 +775,40 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                             ),
                             child: Column(
                               children: [
-                                _buildStepItem(1, 'Compare adjacent elements in the array'),
-                                _buildStepItem(2, 'If elements are in wrong order, swap them'),
-                                _buildStepItem(3, 'Continue this process for the entire array'),
-                                _buildStepItem(4, 'After each pass, one element "bubbles" to its position'),
-                                _buildStepItem(5, 'Repeat until no more swaps are needed'),
+                                _buildStepItem(
+                                  1,
+                                  'Compare adjacent elements in the array',
+                                ),
+                                _buildStepItem(
+                                  2,
+                                  'If elements are in wrong order, swap them',
+                                ),
+                                _buildStepItem(
+                                  3,
+                                  'Continue this process for the entire array',
+                                ),
+                                _buildStepItem(
+                                  4,
+                                  'After each pass, one element "bubbles" to its position',
+                                ),
+                                _buildStepItem(
+                                  5,
+                                  'Repeat until no more swaps are needed',
+                                ),
                               ],
                             ),
                           ),
-                          
+
                           const SizedBox(height: 20),
-                          
+
                           // Time Complexity Section
                           Row(
                             children: [
-                              Icon(Icons.speed, color: Colors.purple.shade700, size: 20),
+                              Icon(
+                                Icons.speed,
+                                color: Colors.purple.shade700,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               const Text(
                                 'Time Complexity:',
@@ -735,27 +830,45 @@ class _BubbleSortPageState extends State<BubbleSortPage>
                             child: Column(
                               children: [
                                 ListTile(
-                                  leading: Icon(Icons.check_circle, color: Colors.green.shade700),
+                                  leading: Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green.shade700,
+                                  ),
                                   title: const Text('Best Case: O(n)'),
-                                  subtitle: const Text('Array is already sorted'),
+                                  subtitle: const Text(
+                                    'Array is already sorted',
+                                  ),
                                   dense: true,
                                 ),
                                 ListTile(
-                                  leading: Icon(Icons.info, color: Colors.orange.shade700),
+                                  leading: Icon(
+                                    Icons.info,
+                                    color: Colors.orange.shade700,
+                                  ),
                                   title: const Text('Average Case: O(n²)'),
                                   subtitle: const Text('Random order'),
                                   dense: true,
                                 ),
                                 ListTile(
-                                  leading: Icon(Icons.error_outline, color: Colors.red.shade700),
+                                  leading: Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red.shade700,
+                                  ),
                                   title: const Text('Worst Case: O(n²)'),
-                                  subtitle: const Text('Array is reverse sorted'),
+                                  subtitle: const Text(
+                                    'Array is reverse sorted',
+                                  ),
                                   dense: true,
                                 ),
                                 ListTile(
-                                  leading: Icon(Icons.memory, color: Colors.blue.shade700),
+                                  leading: Icon(
+                                    Icons.memory,
+                                    color: Colors.blue.shade700,
+                                  ),
                                   title: const Text('Space Complexity: O(1)'),
-                                  subtitle: const Text('Uses constant extra space'),
+                                  subtitle: const Text(
+                                    'Uses constant extra space',
+                                  ),
                                   dense: true,
                                 ),
                               ],
@@ -775,436 +888,477 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         fit: StackFit.expand,
         children: [
           Column(
-        children: [
-          // Minimal input row above animation area
-          Container(
-            color: Colors.blue.shade50,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 0),
-                  child: Row(
-                    children: [
-                      // Input field
-                      Expanded(
-                        child: TextField(
-                          controller: _inputController,
-                          keyboardType: TextInputType.text,
-                          style: const TextStyle(fontSize: 13),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                            hintText: 'Enter up to 10 numbers (e.g. 5,2,9)',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade400),
-                            ),
-                            errorText: null,
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.red),
-                            ),
-                          ),
-                        ),
+            children: [
+              // Minimal input row above animation area
+              Container(
+                color: Colors.blue.shade50,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        top: 8,
+                        bottom: 0,
                       ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        height: 36,
-                        child: ElevatedButton(
-                          onPressed: isSorting ? null : _setArrayFromInput,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                            minimumSize: const Size(0, 36),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          child: const Text('Set', style: TextStyle(fontSize: 13)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-          // Animation Area (Top portion)
-          Expanded(
-            flex: 3,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.blue.shade50, Colors.white],
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Color Legend
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildColorLegend(Colors.blue, 'Unsorted'),
-                        const SizedBox(width: 16),
-                        _buildColorLegend(Colors.orange, 'Comparing'),
-                        const SizedBox(width: 16),
-                        _buildColorLegend(Colors.red, 'Swapping'),
-                        const SizedBox(width: 16),
-                        _buildColorLegend(Colors.green, 'Sorted'),
-                      ],
-                          ),
-                    ),
-                  ),
-                  
-                  // Loop Status
-                  if (isSorting || isSorted) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildStatusChip(
-                              'Pass',
-                              '${currentI + 1}',
-                              Colors.blue,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildStatusChip(
-                              'Position',
-                              '${currentJ + 1}',
-                              Colors.purple,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildStatusChip(
-                              'Comparisons',
-                              '$totalComparisons',
-                              Colors.orange,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildStatusChip(
-                              'Swaps',
-                              '$totalSwaps',
-                              Colors.red,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-
-                  // Animated Bars
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Calculate available height for bars
-                        double totalHeight = constraints.maxHeight;
-                        double reservedHeight = 30; // For text and spacing
-                        double availableBarHeight =
-                            totalHeight - reservedHeight;
-
-                        // Ensure minimum available height
-                        availableBarHeight = availableBarHeight.clamp(
-                          20.0,
-                          double.infinity,
-                        );
-
-                        int maxNumber = numbers.reduce((a, b) => a > b ? a : b);
-
-                        return AnimatedBuilder(
-                          animation: _swapAnimation,
-                          builder: (context, child) {
-                            return Center(
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Container(
-                                  height: totalHeight,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
+                      child: Row(
+                        children: [
+                          // Input field
+                          Expanded(
+                            child: TextField(
+                              controller: _inputController,
+                              keyboardType: TextInputType.text,
+                              style: const TextStyle(fontSize: 13),
+                              decoration: InputDecoration(
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 10,
+                                ),
+                                hintText: 'Enter up to 10 numbers (e.g. 5,2,9)',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey.shade400,
                                   ),
-                                  alignment: Alignment.bottomCenter,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: numbers.asMap().entries.map((
-                                      entry,
-                                    ) {
-                                      int index = entry.key;
-                                      int value = entry.value;
-
-                                      double offset = 0;
-                                      if (isSwapping) {
-                                        if (index == comparingIndex1) {
-                                          offset =
-                                              _swapAnimation.value *
-                                              _getResponsiveSize(context, defaultSize: 34, minSize: 24);
-                                        } else if (index == comparingIndex2) {
-                                          offset =
-                                              -_swapAnimation.value *
-                                              _getResponsiveSize(context, defaultSize: 34, minSize: 24);
-                                        }
-                                      }
-
-                                      // Calculate bar height ensuring it doesn't exceed available space
-                                      double minBarHeight = _getResponsiveSize(context, defaultSize: 10, minSize: 6);
-                                      double calculatedHeight =
-                                          (value / maxNumber) *
-                                          availableBarHeight;
-
-                                      // Ensure the bar height fits within available space
-                                      double barHeight = calculatedHeight.clamp(
-                                        minBarHeight,
-                                        availableBarHeight,
-                                      );
-
-                                      return Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: _getResponsiveSize(context, defaultSize: 3, minSize: 2),
-                                        ),
-                                        child: Transform.translate(
-                                          offset: Offset(offset, 0),
-                                          child: SizedBox(
-                                            height: totalHeight,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                // Number label on top
-                                                Text(
-                                                  value.toString(),
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: _getResponsiveSize(context, defaultSize: 11, minSize: 9),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                // Bar - Use Flexible to take remaining space
-                                                Container(
-                                                  width: _getResponsiveSize(context, defaultSize: 28, minSize: 20),
-                                                  height: barHeight,
-                                                  decoration: BoxDecoration(
-                                                    color: getBarColor(index),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          4,
-                                                        ),
-                                                    // Removed boxShadow to prevent overflow
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                ),
+                                errorText: null,
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
                                   ),
                                 ),
                               ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-                  // Combined Status Display
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: isSwapping
-                          ? Colors.red.shade100
-                          : comparingIndex1 >= 0
-                              ? Colors.orange.shade100
-                              : Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSwapping
-                            ? Colors.red.shade300
-                            : comparingIndex1 >= 0
-                                ? Colors.orange.shade300
-                                : Colors.blue.shade300,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        operationIndicator.isNotEmpty
-                          ? Text(
-                              operationIndicator,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: isSwapping
-                                    ? Colors.red.shade800
-                                    : comparingIndex1 >= 0
-                                        ? Colors.orange.shade800
-                                        : Colors.blue.shade800,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                          : Text(
-                              currentStep,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              textAlign: TextAlign.center,
                             ),
-                      ],
-                    ),
-                  ),
-
-                  // Information and Controls Area
-          Flexible(
-            flex: 6,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Code Display Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Algorithm Code:',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
                           ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: isSorting ? null : toggleSortOrder,
-                          icon: Icon(
-                            isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                            size: 18,
-                          ),
-                          label: Text(isAscending ? 'Ascending' : 'Descending'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isAscending ? Colors.blue : Colors.indigo,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 8,
-                            ),
-                            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildCodeDisplay(),
-
-                    const SizedBox(height: 16),
-
-                    // Controls Section
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        children: [
-                          // Main Controls Card
-                          Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12), // reduced padding
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Action Buttons Grid
-                                  GridView.count(
-                                    crossAxisCount: 3,
-                                    shrinkWrap: true,
-                                    mainAxisSpacing: 8,
-                                    crossAxisSpacing: 8,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    childAspectRatio: 2.2,
-                                    children: [
-                                      _buildControlButton(
-                                        onPressed: isSorting
-                                            ? () {
-                                                setState(() {
-                                                  isPaused = !isPaused;
-                                                });
-                                              }
-                                            : startBubbleSort,
-                                        icon: isSorting
-                                            ? (isPaused ? Icons.play_arrow : Icons.pause)
-                                            : Icons.play_arrow,
-                                        label: isSorting
-                                            ? (isPaused ? 'Play' : 'Pause')
-                                            : 'Start',
-                                        color: Colors.green,
-                                      ),
-                                      _buildControlButton(
-                                        onPressed: isSorting ? stopSorting : null,
-                                        icon: Icons.stop,
-                                        label: 'Stop',
-                                        color: Colors.red,
-                                      ),
-                                      _buildControlButton(
-                                        onPressed: isSorting ? null : resetArray,
-                                        icon: Icons.refresh,
-                                        label: 'Reset',
-                                        color: Colors.orange,
-                                      ),
-                                      _buildControlButton(
-                                        onPressed: isSorting ? null : shuffleArray,
-                                        icon: Icons.shuffle,
-                                        label: 'Shuffle',
-                                        color: Colors.purple,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            height: 36,
+                            child: ElevatedButton(
+                              onPressed: isSorting ? null : _setArrayFromInput,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 0,
+                                ),
+                                minimumSize: const Size(0, 36),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              child: const Text(
+                                'Set',
+                                style: TextStyle(fontSize: 13),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 20),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
-            ),
+              // Animation Area (Top portion)
+              Expanded(
+                flex: 3,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.blue.shade50, Colors.white],
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Color Legend
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildColorLegend(Colors.blue, 'Unsorted'),
+                              const SizedBox(width: 16),
+                              _buildColorLegend(Colors.orange, 'Comparing'),
+                              const SizedBox(width: 16),
+                              _buildColorLegend(Colors.red, 'Swapping'),
+                              const SizedBox(width: 16),
+                              _buildColorLegend(Colors.green, 'Sorted'),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Loop Status
+                      if (isSorting || isSorted) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildStatusChip(
+                                  'Pass',
+                                  '${currentI + 1}',
+                                  Colors.blue,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildStatusChip(
+                                  'Position',
+                                  '${currentJ + 1}',
+                                  Colors.purple,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildStatusChip(
+                                  'Comparisons',
+                                  '$totalComparisons',
+                                  Colors.orange,
+                                ),
+                                const SizedBox(width: 8),
+                                _buildStatusChip(
+                                  'Swaps',
+                                  '$totalSwaps',
+                                  Colors.red,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+
+                      // Animated Bars
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            // Calculate available height for bars
+                            double totalHeight = constraints.maxHeight;
+                            double reservedHeight = 30; // For text and spacing
+                            double availableBarHeight =
+                                totalHeight - reservedHeight;
+
+                            // Ensure minimum available height
+                            availableBarHeight = availableBarHeight.clamp(
+                              20.0,
+                              double.infinity,
+                            );
+
+                            int maxNumber = numbers.reduce(
+                              (a, b) => a > b ? a : b,
+                            );
+
+                            return AnimatedBuilder(
+                              animation: _swapAnimation,
+                              builder: (context, child) {
+                                return Center(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Container(
+                                      height: totalHeight,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: _getResponsiveSize(
+                                          context,
+                                          defaultSize: 16,
+                                          minSize: 8,
+                                        ),
+                                      ),
+                                      alignment: Alignment.bottomCenter,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: numbers.asMap().entries.map((
+                                          entry,
+                                        ) {
+                                          int index = entry.key;
+                                          int value = entry.value;
+
+                                          double offset = 0;
+                                          if (isSwapping) {
+                                            if (index == comparingIndex1) {
+                                              offset =
+                                                  _swapAnimation.value *
+                                                  _getResponsiveSize(
+                                                    context,
+                                                    defaultSize: 34,
+                                                    minSize: 24,
+                                                  );
+                                            } else if (index ==
+                                                comparingIndex2) {
+                                              offset =
+                                                  -_swapAnimation.value *
+                                                  _getResponsiveSize(
+                                                    context,
+                                                    defaultSize: 34,
+                                                    minSize: 24,
+                                                  );
+                                            }
+                                          }
+
+                                          // Calculate bar height ensuring it doesn't exceed available space
+                                          double minBarHeight =
+                                              _getResponsiveSize(
+                                                context,
+                                                defaultSize: 10,
+                                                minSize: 6,
+                                              );
+                                          double calculatedHeight =
+                                              (value / maxNumber) *
+                                              availableBarHeight;
+
+                                          // Ensure the bar height fits within available space
+                                          double barHeight = calculatedHeight
+                                              .clamp(
+                                                minBarHeight,
+                                                availableBarHeight,
+                                              );
+
+                                          return Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: _getResponsiveSize(
+                                                context,
+                                                defaultSize: 3,
+                                                minSize: 2,
+                                              ),
+                                            ),
+                                            child: Transform.translate(
+                                              offset: Offset(offset, 0),
+                                              child: SizedBox(
+                                                height: totalHeight,
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    // Number label on top
+                                                    Text(
+                                                      value.toString(),
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize:
+                                                            _getResponsiveSize(
+                                                              context,
+                                                              defaultSize: 11,
+                                                              minSize: 9,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    // Bar - Use Flexible to take remaining space
+                                                    Container(
+                                                      width: _getResponsiveSize(
+                                                        context,
+                                                        defaultSize: 28,
+                                                        minSize: 20,
+                                                      ),
+                                                      height: barHeight,
+                                                      decoration: BoxDecoration(
+                                                        color: getBarColor(
+                                                          index,
+                                                        ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
+                                                        // Removed boxShadow to prevent overflow
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Combined Status Display
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: isSwapping
+                      ? Colors.red.shade100
+                      : comparingIndex1 >= 0
+                      ? Colors.orange.shade100
+                      : Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSwapping
+                        ? Colors.red.shade300
+                        : comparingIndex1 >= 0
+                        ? Colors.orange.shade300
+                        : Colors.blue.shade300,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    operationIndicator.isNotEmpty
+                        ? Text(
+                            operationIndicator,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: isSwapping
+                                  ? Colors.red.shade800
+                                  : comparingIndex1 >= 0
+                                  ? Colors.orange.shade800
+                                  : Colors.blue.shade800,
+                            ),
+                            textAlign: TextAlign.center,
+                          )
+                        : Text(
+                            currentStep,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                  ],
+                ),
+              ),
+
+              // Information and Controls Area
+              Flexible(
+                flex: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Code Display Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Algorithm Code:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            ElevatedButton.icon(
+                              onPressed: isSorting ? null : toggleSortOrder,
+                              icon: Icon(
+                                isAscending
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward,
+                                size: 18,
+                              ),
+                              label: Text(
+                                isAscending ? 'Ascending' : 'Descending',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isAscending
+                                    ? Colors.blue
+                                    : Colors.indigo,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 8,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        _buildCodeDisplay(),
+
+                        const SizedBox(height: 16),
+
+                        const SizedBox(height: 20),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ExpandableSpeedControl(
+            speed: speed,
+            onSpeedChanged: updateSpeed,
+            isExpanded: isSpeedControlExpanded,
+            onTap: () {
+              setState(() {
+                isSpeedControlExpanded = !isSpeedControlExpanded;
+              });
+            },
+            actionButtons: [
+              ActionButton(
+                onPressed: () {
+                  if (isSorting) {
+                    // Toggle pause/resume
+                    setState(() {
+                      isPaused = !isPaused;
+                    });
+                  } else {
+                    // Start sorting
+                    startBubbleSort();
+                  }
+                },
+                icon: isSorting
+                    ? (isPaused ? Icons.play_arrow : Icons.pause)
+                    : Icons.play_arrow,
+                label: isSorting ? (isPaused ? 'Play' : 'Pause') : 'Start',
+                color: Colors.green,
+              ),
+              ActionButton(
+                onPressed: isSorting ? stopSorting : null,
+                icon: Icons.stop,
+                label: 'Stop',
+                color: Colors.red,
+              ),
+              ActionButton(
+                onPressed: !isSorting ? resetArray : null,
+                icon: Icons.refresh,
+                label: 'Reset',
+                color: Colors.orange,
+              ),
+              ActionButton(
+                onPressed: !isSorting ? shuffleArray : null,
+                icon: Icons.shuffle,
+                label: 'Shuffle',
+                color: Colors.purple,
+              ),
+            ],
           ),
         ],
       ),
-      ExpandableSpeedControl(
-        speed: speed,
-        onSpeedChanged: updateSpeed,
-        isExpanded: isSpeedControlExpanded,
-        onTap: () {
-          setState(() {
-            isSpeedControlExpanded = !isSpeedControlExpanded;
-          });
-        },
-      ),
-    ],
-  ));
+    );
   }
 
   Widget _buildStatusChip(String label, String value, Color color) {
@@ -1244,30 +1398,6 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     );
   }
 
-  Widget _buildControlButton({
-    required VoidCallback? onPressed,
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        minimumSize: const Size(0, 36),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        visualDensity: VisualDensity.compact,
-      ),
-    );
-  }
-
   Widget _buildStepItem(int stepNumber, String description) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1304,17 +1434,19 @@ class _BubbleSortPageState extends State<BubbleSortPage>
     );
   }
 
-  Widget _buildComplexityItem(String label, String complexity, String description, Color color) {
+  Widget _buildComplexityItem(
+    String label,
+    String complexity,
+    String description,
+    Color color,
+  ) {
     return Row(
       children: [
         Container(
           width: 90,
           child: Text(
             label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
           ),
         ),
         Container(
@@ -1339,10 +1471,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
         Expanded(
           child: Text(
             '- $description',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
           ),
         ),
       ],
