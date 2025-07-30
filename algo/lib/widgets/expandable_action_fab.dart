@@ -14,14 +14,14 @@ class ActionButton {
   });
 }
 
-class ExpandableSpeedControl extends StatefulWidget {
+class ExpandableActionFab extends StatefulWidget {
   final double speed;
   final Function(double) onSpeedChanged;
   final bool isExpanded;
   final VoidCallback onTap;
   final List<ActionButton> actionButtons;
 
-  const ExpandableSpeedControl({
+  const ExpandableActionFab({
     super.key,
     required this.speed,
     required this.onSpeedChanged,
@@ -31,10 +31,10 @@ class ExpandableSpeedControl extends StatefulWidget {
   });
 
   @override
-  State<ExpandableSpeedControl> createState() => _ExpandableSpeedControlState();
+  State<ExpandableActionFab> createState() => _ExpandableActionFabState();
 }
 
-class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
+class _ExpandableActionFabState extends State<ExpandableActionFab>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _expandAnimation;
@@ -80,7 +80,7 @@ class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
   }
 
   @override
-  void didUpdateWidget(ExpandableSpeedControl oldWidget) {
+  void didUpdateWidget(ExpandableActionFab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isExpanded != oldWidget.isExpanded) {
       if (widget.isExpanded) {
@@ -287,10 +287,15 @@ class _ExpandableSpeedControlState extends State<ExpandableSpeedControl>
                                     child: Icon(
                                       widget.isExpanded
                                           ? Icons.close
-                                          : Icons.settings,
+                                          : Icons.add,
                                       key: ValueKey(widget.isExpanded),
-                                      color: Colors.white,
-                                      size: 24,
+                                      color: const Color.fromARGB(
+                                        255,
+                                        85,
+                                        76,
+                                        76,
+                                      ),
+                                      size: 30,
                                     ),
                                   ),
                                 ),

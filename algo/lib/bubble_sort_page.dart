@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'widgets/expandable_speed_control.dart';
+import 'widgets/expandable_action_fab.dart';
 
 class BubbleSortPage extends StatefulWidget {
   const BubbleSortPage({super.key});
@@ -1308,7 +1308,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               ),
             ],
           ),
-          ExpandableSpeedControl(
+          ExpandableActionFab(
             speed: speed,
             onSpeedChanged: updateSpeed,
             isExpanded: isSpeedControlExpanded,
