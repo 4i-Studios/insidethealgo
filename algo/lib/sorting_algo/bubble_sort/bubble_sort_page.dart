@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'widgets/expandable_action_fab.dart';
+import '../../widgets/expandable_action_fab.dart';
 
 class BubbleSortPage extends StatefulWidget {
   const BubbleSortPage({super.key});

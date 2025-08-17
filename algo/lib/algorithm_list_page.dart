@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'bubble_sort_page.dart';
+import 'sorting_algo/bubble_sort/bubble_sort_page.dart';
 import 'modified_bubble_sort.dart';
 
 class AlgorithmListPage extends StatelessWidget {
@@ -35,10 +35,16 @@ class AlgorithmListPage extends StatelessWidget {
             elevation: 3,
             margin: const EdgeInsets.symmetric(vertical: 10),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
+              ),
               title: Text(
                 algo['name'] as String,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               subtitle: Text(algo['description'] as String),
               trailing: const Icon(Icons.arrow_forward_ios, size: 18),
@@ -54,4 +60,4 @@ class AlgorithmListPage extends StatelessWidget {
       ),
     );
   }
-} 
+}
