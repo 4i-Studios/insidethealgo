@@ -1,6 +1,6 @@
 {
-    "name": "algo",
-    "short_name": "algo",
+    "name": "InsideTheAlgo",
+    "short_name": "InsideTheAlgo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
