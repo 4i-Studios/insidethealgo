@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'sorting_algo/bubble_sort/bubble_sort_page.dart';
-import 'modified_bubble_sort.dart';
+import 'sorting_algo/mod_bubble_sort/modified_bubble_sort.dart';
+import 'sorting_algo/selection_sort/selection_sort_page.dart';
+import 'sorting_algo/insertion_sort/insertion_sort_page.dart';
 
 class AlgorithmListPage extends StatelessWidget {
   const AlgorithmListPage({super.key});
@@ -17,6 +19,16 @@ class AlgorithmListPage extends StatelessWidget {
         'name': 'Modified Bubble Sort',
         'description': 'Optimized bubble sort with early exit',
         'page': const ModifiedBubbleSortPage(),
+      },
+      {
+        'name': 'Selection Sort',
+        'description': 'Find minimum and place at beginning',
+        'page': const SelectionSortPage(),
+      },
+      {
+        'name': 'Insertion Sort',
+        'description': 'Insert each element in correct position',
+        'page': const InsertionSortPage(),
       },
     ];
 
@@ -51,7 +63,9 @@ class AlgorithmListPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => algo['page'] as Widget),
+                  MaterialPageRoute(
+                    builder: (context) => algo['page'] as Widget,
+                  ),
                 );
               },
             ),

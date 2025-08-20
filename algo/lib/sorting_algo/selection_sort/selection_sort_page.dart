@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../widgets/expandable_action_fab.dart';
-import 'bubble_sort_logic.dart';
-import 'bubble_sort_widgets.dart';
-import 'bubble_sort_guide.dart';
+import 'selection_sort_logic.dart';
+import 'selection_sort_widgets.dart';
+import 'selection_sort_guide.dart';
 
-class BubbleSortPage extends StatefulWidget {
-  const BubbleSortPage({super.key});
+class SelectionSortPage extends StatefulWidget {
+  const SelectionSortPage({super.key});
 
   @override
-  State<BubbleSortPage> createState() => _BubbleSortPageState();
+  State<SelectionSortPage> createState() => _SelectionSortPageState();
 }
 
-class _BubbleSortPageState extends State<BubbleSortPage>
+class _SelectionSortPageState extends State<SelectionSortPage>
     with TickerProviderStateMixin {
-  late final BubbleSortLogic _logic;
-  late final BubbleSortWidgets _widgets;
+  late final SelectionSortLogic _logic;
+  late final SelectionSortWidgets _widgets;
 
   @override
   void initState() {
     super.initState();
-    _logic = BubbleSortLogic(
+    _logic = SelectionSortLogic(
       onStateChanged: () => setState(() {}),
       vsync: this,
     );
-    _widgets = BubbleSortWidgets(_logic);
+    _widgets = SelectionSortWidgets(_logic);
   }
 
   @override
@@ -37,7 +37,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bubble Sort Algorithm Demo'),
+        title: const Text('Selection Sort Algorithm Demo'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         actions: [
@@ -47,7 +47,7 @@ class _BubbleSortPageState extends State<BubbleSortPage>
               style: TextStyle(color: Colors.white, fontSize: 14),
             ),
             icon: const Icon(Icons.book, size: 18, color: Colors.white),
-            onPressed: () => BubbleSortGuide.show(context),
+            onPressed: () => SelectionSortGuide.show(context),
           ),
         ],
       ),
