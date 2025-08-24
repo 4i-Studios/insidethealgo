@@ -338,7 +338,7 @@ class SelectionSortWidgets {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
-                  'Selection Sort Algorithm Code:',
+                  'Selection Algorithm Code:',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

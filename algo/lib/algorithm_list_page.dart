@@ -3,6 +3,7 @@ import 'sorting_algo/bubble_sort/bubble_sort_page.dart';
 import 'sorting_algo/mod_bubble_sort/modified_bubble_sort.dart';
 import 'sorting_algo/selection_sort/selection_sort_page.dart';
 import 'sorting_algo/insertion_sort/insertion_sort_page.dart';
+import 'sorting_algo/merge_sort/merge_sort_page.dart';
 import 'searching_algo/linear_search/linear_search_page.dart';
 import 'searching_algo/binary_search/binary_search_page.dart';
 
@@ -42,6 +43,18 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
         'page': const InsertionSortPage(),
         'icon': Icons.input,
       },
+      {
+        'name': 'Merge Sort',
+        'description': 'Efficient, stable, divide and conquer',
+        'page': const MergeSortPage(),
+        'icon': Icons.merge_type,
+      },
+      // {
+      //   'name': 'Quick Sort',
+      //   'description': 'Fast, in-place, divide and conquer',
+      //   'page': null, // Placeholder for future implementation
+      //   'icon': Icons.flash_on,
+      // }
     ],
     'Search Algorithms': [
       {
