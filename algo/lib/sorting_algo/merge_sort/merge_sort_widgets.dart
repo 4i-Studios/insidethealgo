@@ -23,70 +23,30 @@ class MergeSortWidgets {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(
-              left: 12,
-              right: 12,
-              top: 8,
-              bottom: 0,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: logic.arrayController,
-                    keyboardType: TextInputType.text,
-                    style: const TextStyle(fontSize: 13),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 10,
-                      ),
-                      hintText: 'Enter up to 20 numbers (e.g. 64,34,25,12)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.blue.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: Colors.blue,
-                          width: 2,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: Colors.red,
-                          width: 2,
-                        ),
-                      ),
+                    decoration: const InputDecoration(
+                      labelText: 'Enter numbers (comma separated)',
+                      border: OutlineInputBorder(),
+                      hintText: 'e.g., 64, 34, 25, 12, 22',
                     ),
+                    keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 6),
-                SizedBox(
-                  height: 36,
-                  child: ElevatedButton(
-                    onPressed: logic.isSorting
-                        ? null
-                        : () => logic.setArrayFromInput(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 0,
-                      ),
-                      minimumSize: const Size(0, 36),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: const Text('Set', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: logic.isSorting
+                      ? null
+                      : () => logic.setArrayFromInput(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
                   ),
+                  child: const Text('Set'),
                 ),
               ],
             ),
@@ -115,29 +75,137 @@ class MergeSortWidgets {
             _buildStatusChips(context),
             const SizedBox(height: 8),
           ],
-          Expanded(child: _buildAnimatedBars(context)),
+          Expanded(
+            child: Row(
+              children: [
+                // Tree visualization - 2/3 of width
+                Expanded(flex: 2, child: _buildTreeVisualization(context)),
+                const SizedBox(width: 8),
+                // Bar chart - 1/3 of width
+                Expanded(flex: 1, child: _buildAnimatedBars(context)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildTreeVisualization(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Divide & Conquer Tree',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: _buildTreeStructure(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTreeStructure() {
+    if (logic.numbers.isEmpty) {
+      return const Center(child: Text('Start sorting to see the tree'));
+    }
+
+    return Column(children: [_buildTreeLevel(logic.numbers, 0)]);
+  }
+
+  Widget _buildTreeLevel(List<int> array, int level) {
+    if (array.length <= 1 || level > 3) {
+      return _buildTreeNode(array, level, true);
+    }
+
+    int mid = array.length ~/ 2;
+    List<int> left = array.sublist(0, mid);
+    List<int> right = array.sublist(mid);
+
+    return Column(
+      children: [
+        _buildTreeNode(array, level, false),
+        if (level < 3) ...[
+          const SizedBox(height: 8),
+          // Connection lines
+          Container(
+            height: 16,
+            child: CustomPaint(
+              painter: TreeLinePainter(),
+              size: const Size(100, 16),
+            ),
+          ),
+          // Child nodes
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(child: _buildTreeLevel(left, level + 1)),
+              Expanded(child: _buildTreeLevel(right, level + 1)),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTreeNode(List<int> array, int level, bool isLeaf) {
+    Color nodeColor;
+    if (isLeaf) {
+      nodeColor = Colors.green.shade100;
+    } else if (logic.isSorting) {
+      nodeColor = Colors.orange.shade100;
+    } else {
+      nodeColor = Colors.blue.shade100;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: nodeColor,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.shade400),
+      ),
+      child: Text(
+        '[${array.join(',')}]',
+        style: TextStyle(
+          fontSize: (10 - level).clamp(8, 12).toDouble(),
+          fontWeight: FontWeight.w500,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
   Widget _buildColorLegend() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
             _buildColorLegendItem(Colors.blue, 'Unsorted'),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             _buildColorLegendItem(Colors.orange, 'Dividing'),
-            const SizedBox(width: 16),
-            _buildColorLegendItem(Colors.purple, 'Merging'),
-            const SizedBox(width: 16),
-            _buildColorLegendItem(Colors.red, 'Current'),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
+            _buildColorLegendItem(Colors.red, 'Merging'),
+            const SizedBox(width: 12),
             _buildColorLegendItem(Colors.green, 'Sorted'),
           ],
         ),
@@ -150,37 +218,36 @@ class MergeSortWidgets {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 14,
-          height: 14,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
+        Text(label, style: const TextStyle(fontSize: 11)),
       ],
     );
   }
 
   Widget _buildStatusChips(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      height: 32,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildStatusChip(
               'Comparisons',
               '${logic.totalComparisons}',
-              Colors.orange,
+              Colors.blue,
             ),
             const SizedBox(width: 8),
             _buildStatusChip('Moves', '${logic.totalSwaps}', Colors.red),
             if (logic.leftArray.isNotEmpty) ...[
               const SizedBox(width: 8),
-              _buildArrayChip('Left', logic.leftArray, Colors.blue),
+              _buildArrayChip('Left', logic.leftArray, Colors.orange),
             ],
             if (logic.rightArray.isNotEmpty) ...[
               const SizedBox(width: 8),
@@ -203,7 +270,7 @@ class MergeSortWidgets {
       child: Text(
         '$label: $value',
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
@@ -222,111 +289,106 @@ class MergeSortWidgets {
       child: Text(
         '$label: [${array.join(',')}]',
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
   Widget _buildAnimatedBars(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double totalHeight = constraints.maxHeight;
-        double reservedHeight = 30;
-        double availableBarHeight = (totalHeight - reservedHeight).clamp(
-          20.0,
-          double.infinity,
-        );
-        int maxNumber = logic.numbers.isNotEmpty
-            ? logic.numbers.reduce((a, b) => a > b ? a : b)
-            : 1;
-
-        return Center(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              height: totalHeight,
-              padding: EdgeInsets.symmetric(
-                horizontal: _getResponsiveSize(
-                  context,
-                  defaultSize: 16,
-                  minSize: 8,
-                ),
-              ),
-              alignment: Alignment.bottomCenter,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: logic.numbers.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  int value = entry.value;
-
-                  double minBarHeight = _getResponsiveSize(
-                    context,
-                    defaultSize: 10,
-                    minSize: 6,
-                  );
-                  double calculatedHeight =
-                      (value / maxNumber) * availableBarHeight;
-                  double barHeight = calculatedHeight.clamp(
-                    minBarHeight,
-                    availableBarHeight,
-                  );
-
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: _getResponsiveSize(
-                        context,
-                        defaultSize: 4,
-                        minSize: 2,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          '$value',
-                          style: TextStyle(
-                            fontSize: _getResponsiveSize(
-                              context,
-                              defaultSize: 12,
-                              minSize: 10,
-                            ),
-                            fontWeight: FontWeight.bold,
-                            color: logic.getBarColor(index),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          width: _getResponsiveSize(
-                            context,
-                            defaultSize: 30,
-                            minSize: 20,
-                          ),
-                          height: barHeight,
-                          decoration: BoxDecoration(
-                            color: logic.getBarColor(index),
-                            borderRadius: BorderRadius.circular(4),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Array State',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
-        );
-      },
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (logic.numbers.isEmpty) {
+                  return const Center(
+                    child: Text('No data', style: TextStyle(fontSize: 12)),
+                  );
+                }
+
+                double availableHeight = constraints.maxHeight - 20;
+                double availableWidth = constraints.maxWidth - 16;
+                int maxNumber = logic.numbers.reduce((a, b) => a > b ? a : b);
+
+                return Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      height: availableHeight,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: logic.numbers.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          int value = entry.value;
+
+                          double barWidth = _getResponsiveSize(context,
+                            defaultSize: availableWidth / logic.numbers.length,
+                            minSize: 8.0,
+                            maxSize: 25.0,
+                          );
+                          double barHeight =
+                              ((value / maxNumber) * (availableHeight - 20))
+                                  .clamp(10.0, availableHeight - 20);
+
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 1),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: barWidth,
+                                  height: barHeight,
+                                  decoration: BoxDecoration(
+                                    color: logic.getBarColor(index),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(2),
+                                      topRight: Radius.circular(2),
+                                    ),
+                                    border: Border.all(
+                                      color: Colors.black26,
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$value',
+                                  style: const TextStyle(fontSize: 8),
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -355,14 +417,10 @@ class MergeSortWidgets {
           logic.operationIndicator.isNotEmpty
               ? Text(
                   logic.operationIndicator,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: logic.mergeIndex >= 0
-                        ? Colors.red.shade800
-                        : logic.isSorting
-                        ? Colors.purple.shade800
-                        : Colors.blue.shade800,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 )
@@ -370,7 +428,8 @@ class MergeSortWidgets {
                   logic.currentStep,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -395,15 +454,7 @@ class MergeSortWidgets {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCodeDisplay(context),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
+            child: SingleChildScrollView(child: _buildCodeDisplay(context)),
           ),
         ],
       ),
@@ -430,45 +481,41 @@ class MergeSortWidgets {
         'text': 'void merge(List<int> arr, int left, int mid, int right) {',
         'indent': 0,
       },
-      {'line': 10, 'text': '  // Create temporary arrays', 'indent': 1},
       {
-        'line': 11,
+        'line': 10,
         'text': '  List<int> leftArr = arr.sublist(left, mid + 1);',
         'indent': 1,
       },
       {
-        'line': 12,
+        'line': 11,
         'text': '  List<int> rightArr = arr.sublist(mid + 1, right + 1);',
         'indent': 1,
       },
-      {'line': 13, 'text': '  int i = 0, j = 0, k = left;', 'indent': 1},
-      {'line': 14, 'text': '  // Merge the arrays', 'indent': 1},
+      {'line': 12, 'text': '  int i = 0, j = 0, k = left;', 'indent': 1},
       {
-        'line': 15,
+        'line': 13,
         'text': '  while (i < leftArr.length && j < rightArr.length) {',
         'indent': 1,
       },
-      {'line': 16, 'text': '    if (leftArr[i] <= rightArr[j]) {', 'indent': 2},
-      {'line': 17, 'text': '      arr[k] = leftArr[i++];', 'indent': 3},
-      {'line': 18, 'text': '    } else {', 'indent': 2},
-      {'line': 19, 'text': '      arr[k] = rightArr[j++];', 'indent': 3},
-      {'line': 20, 'text': '    }', 'indent': 2},
-      {'line': 21, 'text': '    k++;', 'indent': 2},
-      {'line': 22, 'text': '  }', 'indent': 1},
-      {'line': 23, 'text': '  // Copy remaining elements', 'indent': 1},
+      {'line': 14, 'text': '    if (leftArr[i] <= rightArr[j]) {', 'indent': 2},
+      {'line': 15, 'text': '      arr[k++] = leftArr[i++];', 'indent': 3},
+      {'line': 16, 'text': '    } else {', 'indent': 2},
+      {'line': 17, 'text': '      arr[k++] = rightArr[j++];', 'indent': 3},
+      {'line': 18, 'text': '    }', 'indent': 2},
+      {'line': 19, 'text': '  }', 'indent': 1},
       {
-        'line': 24,
+        'line': 20,
         'text': '  while (i < leftArr.length) arr[k++] = leftArr[i++];',
         'indent': 1,
       },
       {
-        'line': 25,
+        'line': 21,
         'text': '  while (j < rightArr.length) arr[k++] = rightArr[j++];',
         'indent': 1,
       },
-      {'line': 26, 'text': '}', 'indent': 0},
+      {'line': 22, 'text': '}', 'indent': 0},
       if (logic.sortCompleted)
-        {'line': 27, 'text': 'Sorting Complete!', 'indent': 0},
+        {'line': 23, 'text': '// Sorting Complete! ✨', 'indent': 0},
     ];
 
     return Container(
@@ -545,109 +592,31 @@ class MergeSortWidgets {
       padding: const EdgeInsets.all(12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: IntrinsicWidth(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: codeLines.map((codeLine) {
-              if (codeLine['line'] == 27 && !logic.sortCompleted) {
-                return const SizedBox.shrink();
-              }
-
-              bool isHighlighted = logic.highlightedLine == codeLine['line'];
-
-              return Container(
-                constraints: BoxConstraints(
-                  minWidth: MediaQuery.of(context).size.width - 32,
-                ),
-                padding: EdgeInsets.symmetric(
-                  vertical: _getResponsiveSize(
-                    context,
-                    defaultSize: 2,
-                    minSize: 1,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: codeLines.map((codeLine) {
+            bool isHighlighted = logic.highlightedLine == codeLine['line'];
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              color: isHighlighted
+                  ? Colors.yellow.withOpacity(0.2)
+                  : Colors.transparent,
+              child: Row(
+                children: [
+                  SizedBox(width: codeLine['indent'] * 16.0),
+                  Text(
+                    codeLine['text'],
+                    style: TextStyle(
+                      color: _getCodeTextColor(codeLine['text']),
+                      fontSize: 12,
+                      fontFamily: 'Courier',
+                      height: 1.2,
+                    ),
                   ),
-                  horizontal: _getResponsiveSize(
-                    context,
-                    defaultSize: 4,
-                    minSize: 2,
-                  ),
-                ),
-                margin: EdgeInsets.symmetric(
-                  vertical: _getResponsiveSize(
-                    context,
-                    defaultSize: 1,
-                    minSize: 0.5,
-                  ),
-                ),
-                decoration: BoxDecoration(
-                  color: isHighlighted
-                      ? const Color(0xFF264F78).withOpacity(0.8)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(3),
-                  border: isHighlighted
-                      ? Border.all(color: const Color(0xFF0E639C), width: 1)
-                      : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: _getResponsiveSize(
-                        context,
-                        defaultSize: 24,
-                        minSize: 20,
-                      ),
-                      child: Text(
-                        '${codeLine['line'] + 1}',
-                        style: TextStyle(
-                          fontSize: _getResponsiveSize(
-                            context,
-                            defaultSize: 12,
-                            minSize: 10,
-                          ),
-                          color: const Color(0xFF858585),
-                          fontFamily: 'Courier',
-                        ),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                    SizedBox(
-                      width: _getResponsiveSize(
-                        context,
-                        defaultSize: 8,
-                        minSize: 4,
-                      ),
-                    ),
-                    SizedBox(
-                      width:
-                          codeLine['indent'] *
-                          _getResponsiveSize(
-                            context,
-                            defaultSize: 16,
-                            minSize: 12,
-                          ),
-                    ),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Text(
-                        codeLine['text'],
-                        style: TextStyle(
-                          fontSize: _getResponsiveSize(
-                            context,
-                            defaultSize: 13,
-                            minSize: 11,
-                          ),
-                          color: _getCodeTextColor(codeLine['text']),
-                          fontFamily: 'Courier',
-                          height: 1.2,
-                        ),
-                        overflow: TextOverflow.visible,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+                ],
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
@@ -673,4 +642,28 @@ class MergeSortWidgets {
     }
     return Colors.white;
   }
+}
+
+class TreeLinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey.shade400
+      ..strokeWidth = 1.0;
+
+    // Draw branching lines
+    canvas.drawLine(
+      Offset(size.width * 0.5, 0),
+      Offset(size.width * 0.25, size.height),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.5, 0),
+      Offset(size.width * 0.75, size.height),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

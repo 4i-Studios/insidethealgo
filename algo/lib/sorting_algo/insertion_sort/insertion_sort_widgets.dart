@@ -328,7 +328,7 @@ class InsertionSortWidgets {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
-                  'Insertion Sort Algorithm Code:',
+                  'Insertion Algorithm Code:',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

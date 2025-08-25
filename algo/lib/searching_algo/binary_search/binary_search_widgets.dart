@@ -370,7 +370,7 @@ class BinarySearchWidgets {
     return LayoutBuilder(
       builder: (context, constraints) {
         double totalHeight = constraints.maxHeight;
-        double reservedHeight = 30;
+        double reservedHeight = 40;
         double availableBarHeight = (totalHeight - reservedHeight).clamp(
           20.0,
           double.infinity,
