@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-class MergeSortLogic extends ChangeNotifier {
-  final TickerProvider tickerProvider;
+class MergeSortLogic {
+  final VoidCallback onStateChanged;
+  final TickerProvider vsync;
+
+  MergeSortLogic({
+    required this.onStateChanged,
+    required this.vsync,
+  }) {
+    sortAnimation = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: vsync,
+    );
+    _initializeColors();
+    arrayController.text = numbers.join(', ');
+  }
 
   // Controllers
   final TextEditingController arrayController = TextEditingController();
@@ -20,6 +34,12 @@ class MergeSortLogic extends ChangeNotifier {
   int totalComparisons = 0;
   int highlightedLine = -1;
 
+  // Speed control properties to match other sorting algorithms
+  double speed = 1.0;
+  bool isPaused = false;
+  bool isSpeedControlExpanded = false;
+  bool shouldStop = false;
+
   // Merge sort specific
   List<int> leftArray = [];
   List<int> rightArray = [];
@@ -28,17 +48,44 @@ class MergeSortLogic extends ChangeNotifier {
   int mergeIndex = -1;
   List<Color> barColors = [];
 
-  MergeSortLogic(this.tickerProvider) {
-    sortAnimation = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: tickerProvider,
-    );
-    _initializeColors();
-    arrayController.text = numbers.join(', ');
-  }
-
   void _initializeColors() {
     barColors = List.generate(numbers.length, (index) => Colors.blue);
+  }
+
+  void dispose() {
+    sortAnimation.dispose();
+    arrayController.dispose();
+  }
+
+  void updateSpeed(double newSpeed) {
+    speed = newSpeed;
+    onStateChanged();
+  }
+
+  void toggleSpeedControl() {
+    isSpeedControlExpanded = !isSpeedControlExpanded;
+    onStateChanged();
+  }
+
+  void onPlayPausePressed() {
+    if (isSorting) {
+      isPaused = !isPaused;
+    } else {
+      startSort();
+    }
+    onStateChanged();
+  }
+
+  void stopSorting() {
+    shouldStop = true;
+    isSorting = false;
+    onStateChanged();
+  }
+
+  Future<void> _waitIfPaused() async {
+    while (isPaused) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
   }
 
   void setArrayFromInput(BuildContext context) {
@@ -66,7 +113,7 @@ class MergeSortLogic extends ChangeNotifier {
       originalNumbers = List.from(numbers);
       _resetSortingState();
       _initializeColors();
-      notifyListeners();
+      onStateChanged();
     } catch (e) {
       _showSnackBar(context, 'Please enter valid numbers separated by commas');
     }
@@ -97,7 +144,7 @@ class MergeSortLogic extends ChangeNotifier {
   void resetArray() {
     numbers = List.from(originalNumbers);
     _resetSortingState();
-    notifyListeners();
+    onStateChanged();
   }
 
   void shuffleArray() {
@@ -106,7 +153,7 @@ class MergeSortLogic extends ChangeNotifier {
       originalNumbers = List.from(numbers);
       arrayController.text = numbers.join(', ');
       _resetSortingState();
-      notifyListeners();
+      onStateChanged();
     }
   }
 
@@ -119,7 +166,7 @@ class MergeSortLogic extends ChangeNotifier {
     totalComparisons = 0;
     highlightedLine = 0;
     currentStep = 'Starting merge sort...';
-    notifyListeners();
+    onStateChanged();
 
     await _mergeSort(0, numbers.length - 1);
 
@@ -129,18 +176,22 @@ class MergeSortLogic extends ChangeNotifier {
     operationIndicator = 'Array is now sorted! ✨';
     highlightedLine = -1;
     _initializeColors();
-    notifyListeners();
+    onStateChanged();
   }
 
   Future<void> _mergeSort(int left, int right) async {
+    if (shouldStop) return;
+
     if (left < right) {
       highlightedLine = 1;
       int mid = (left + right) ~/ 2;
 
       operationIndicator = 'Dividing array: [${left}, ${right}] → [${left}, ${mid}] and [${mid + 1}, ${right}]';
       _highlightRange(left, right, Colors.orange);
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 800));
+      onStateChanged();
+
+      await _waitIfPaused();
+      await Future.delayed(Duration(milliseconds: (800 / speed).round()));
 
       // Recursively sort left and right halves
       await _mergeSort(left, mid);
@@ -152,6 +203,8 @@ class MergeSortLogic extends ChangeNotifier {
   }
 
   Future<void> _merge(int left, int mid, int right) async {
+    if (shouldStop) return;
+
     highlightedLine = 5;
 
     // Create temporary arrays
@@ -163,13 +216,15 @@ class MergeSortLogic extends ChangeNotifier {
 
     operationIndicator = 'Merging: Left[${leftArr.join(',')}] Right[${rightArr.join(',')}]';
     _highlightRange(left, right, Colors.purple);
-    notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 1000));
+    onStateChanged();
+
+    await _waitIfPaused();
+    await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
 
     int i = 0, j = 0, k = left;
 
     // Merge the arrays
-    while (i < leftArr.length && j < rightArr.length) {
+    while (i < leftArr.length && j < rightArr.length && !shouldStop) {
       highlightedLine = 8;
       totalComparisons++;
 
@@ -191,12 +246,13 @@ class MergeSortLogic extends ChangeNotifier {
       k++;
       totalSwaps++;
 
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 600));
+      onStateChanged();
+      await _waitIfPaused();
+      await Future.delayed(Duration(milliseconds: (600 / speed).round()));
     }
 
     // Copy remaining elements
-    while (i < leftArr.length) {
+    while (i < leftArr.length && !shouldStop) {
       highlightedLine = 13;
       leftIndex = i;
       mergeIndex = k;
@@ -206,11 +262,12 @@ class MergeSortLogic extends ChangeNotifier {
       i++;
       k++;
       totalSwaps++;
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 400));
+      onStateChanged();
+      await _waitIfPaused();
+      await Future.delayed(Duration(milliseconds: (400 / speed).round()));
     }
 
-    while (j < rightArr.length) {
+    while (j < rightArr.length && !shouldStop) {
       highlightedLine = 16;
       rightIndex = j;
       mergeIndex = k;
@@ -220,8 +277,9 @@ class MergeSortLogic extends ChangeNotifier {
       j++;
       k++;
       totalSwaps++;
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 400));
+      onStateChanged();
+      await _waitIfPaused();
+      await Future.delayed(Duration(milliseconds: (400 / speed).round()));
     }
 
     leftIndex = -1;
@@ -229,8 +287,9 @@ class MergeSortLogic extends ChangeNotifier {
     mergeIndex = -1;
     operationIndicator = 'Merged successfully!';
 
-    notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 500));
+    onStateChanged();
+    await _waitIfPaused();
+    await Future.delayed(Duration(milliseconds: (500 / speed).round()));
   }
 
   void _highlightRange(int start, int end, Color color) {
@@ -247,12 +306,5 @@ class MergeSortLogic extends ChangeNotifier {
     if (index == mergeIndex && isSorting) return Colors.red;
     if (sortCompleted) return Colors.green;
     return barColors[index];
-  }
-
-  @override
-  void dispose() {
-    sortAnimation.dispose();
-    arrayController.dispose();
-    super.dispose();
   }
 }

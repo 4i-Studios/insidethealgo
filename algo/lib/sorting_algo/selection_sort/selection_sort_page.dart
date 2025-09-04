@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../widgets/algorithm_app_bar.dart';
+import '../../widgets/algorithm_layout.dart';
 import '../../widgets/expandable_action_fab.dart';
 import 'selection_sort_logic.dart';
 import 'selection_sort_widgets.dart';
@@ -36,10 +38,8 @@ class _SelectionSortPageState extends State<SelectionSortPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AlgorithmAppBar(
         title: const Text('Selection Sort Algorithm Demo'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
         actions: [
           TextButton.icon(
             label: const Text(
@@ -51,69 +51,52 @@ class _SelectionSortPageState extends State<SelectionSortPage>
           ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Column(
-            children: [
-              // Input section
-              _widgets.buildInputSection(context),
-
-              // Animation area
-              Expanded(
-                flex: 3,
-                child: _widgets.buildAnimationArea(context),
-              ),
-
-              // Status display
-              _widgets.buildStatusDisplay(context),
-
-              // Code and controls area
-              Flexible(
-                flex: 6,
-                child: _widgets.buildCodeAndControlsArea(context),
-              ),
-            ],
-          ),
-
-          // Floating action button
-          ExpandableActionFab(
-            speed: _logic.speed,
-            onSpeedChanged: _logic.updateSpeed,
-            isExpanded: _logic.isSpeedControlExpanded,
-            onTap: () => _logic.toggleSpeedControl(),
-            actionButtons: [
-              ActionButton(
-                onPressed: _logic.onPlayPausePressed,
-                icon: _logic.isSorting
-                    ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
-                    : Icons.play_arrow,
-                label: _logic.isSorting
-                    ? (_logic.isPaused ? 'Play' : 'Pause')
-                    : 'Start',
-                color: Colors.green,
-              ),
-              ActionButton(
-                onPressed: _logic.isSorting ? _logic.stopSorting : null,
-                icon: Icons.stop,
-                label: 'Stop',
-                color: Colors.red,
-              ),
-              ActionButton(
-                onPressed: !_logic.isSorting ? _logic.resetArray : null,
-                icon: Icons.refresh,
-                label: 'Reset',
-                color: Colors.orange,
-              ),
-              ActionButton(
-                onPressed: !_logic.isSorting ? _logic.shuffleArray : null,
-                icon: Icons.shuffle,
-                label: 'Shuffle',
-                color: Colors.purple,
-              ),
-            ],
-          ),
-        ],
+      body: AlgorithmLayout(
+        inputSection: HideableInputSection(
+          child: _widgets.buildInputSection(context),
+          hide: _logic.isSorting,
+        ),
+        animationArea: _widgets.buildAnimationArea(context),
+        statusDisplay: _widgets.buildStatusDisplay(context),
+        codeDisplay: _widgets.buildCodeAndControlsArea(context),
+        floatingActionButton: ExpandableActionFab(
+          speed: _logic.speed,
+          onSpeedChanged: _logic.updateSpeed,
+          isExpanded: _logic.isSpeedControlExpanded,
+          onTap: () => _logic.toggleSpeedControl(),
+          actionButtons: [
+            ActionButton(
+              onPressed: _logic.isSorting
+                  ? (_logic.isPaused ? _logic.onPlayPausePressed : _logic.onPlayPausePressed)
+                  : _logic.onPlayPausePressed,
+              icon: _logic.isSorting
+                  ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
+                  : Icons.play_arrow,
+              label: _logic.isSorting
+                  ? (_logic.isPaused ? 'Play' : 'Pause')
+                  : 'Start',
+              color: Colors.green,
+            ),
+            ActionButton(
+              onPressed: _logic.isSorting ? _logic.stopSorting : null,
+              icon: Icons.stop,
+              label: 'Stop',
+              color: Colors.red,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSorting ? _logic.resetArray : null,
+              icon: Icons.refresh,
+              label: 'Reset',
+              color: Colors.orange,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSorting ? _logic.shuffleArray : null,
+              icon: Icons.shuffle,
+              label: 'Shuffle',
+              color: Colors.purple,
+            ),
+          ],
+        ),
       ),
     );
   }

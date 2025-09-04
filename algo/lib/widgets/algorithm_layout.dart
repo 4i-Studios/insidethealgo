@@ -20,30 +20,45 @@ class AlgorithmLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Column(
-            children: [
-              inputSection,
-              Expanded(
-                flex: 3,
-                child: animationArea,
-              ),
-              if (statusDisplay != null) statusDisplay!,
-              Expanded(
-                flex: 2,
-                child: codeDisplay,
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: 20,
-            right: 20,
-            child: floatingActionButton,
-          ),
-        ],
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Hide inputSection if simulation is running
+                if (!(inputSection is HideableInputSection && (inputSection as HideableInputSection).hide))
+                  inputSection,
+                Expanded(
+                  flex: 6,
+                  child: animationArea,
+                ),
+                if (statusDisplay != null) statusDisplay!,
+                Expanded(
+                  flex: 8,
+                  child: codeDisplay,
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: floatingActionButton,
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+// Helper widget to allow hiding input section
+class HideableInputSection extends StatelessWidget {
+  final Widget child;
+  final bool hide;
+  const HideableInputSection({required this.child, required this.hide});
+  @override
+  Widget build(BuildContext context) => hide ? const SizedBox.shrink() : child;
 }

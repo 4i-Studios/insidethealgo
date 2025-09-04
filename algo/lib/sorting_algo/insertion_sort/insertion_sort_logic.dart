@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+class SortItem {
+  final int id;
+  int value;
+  SortItem(this.id, this.value);
+}
+
 class InsertionSortLogic {
   final VoidCallback onStateChanged;
   final TickerProvider vsync;
@@ -16,16 +22,22 @@ class InsertionSortLogic {
     _insertAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    // Initialize arrays with default items
+    numbers = _makeItemsFromInts(_defaultNumbers);
+    originalNumbers = List.from(numbers);
+    _resetState();
   }
 
   // State variables
-  final List<int> defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
+  final List<int> _defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
+
+  // Use SortItem to keep identity across moves (fixes visualization & duplicate handling)
+  late List<SortItem> numbers;
+  late List<SortItem> originalNumbers;
 
   int currentI = -1;
   int currentJ = -1;
-  int keyElement = -1;
+  SortItem? keyItem;
   int keyIndex = -1;
   bool isInserting = false;
   bool isSorting = false;
@@ -57,6 +69,12 @@ class InsertionSortLogic {
     inputController.dispose();
   }
 
+  // Helper to create SortItem list
+  List<SortItem> _makeItemsFromInts(List<int> list) {
+    int id = 0;
+    return list.map((v) => SortItem(id++, v)).toList();
+  }
+
   void setArrayFromInput(BuildContext context) {
     final input = inputController.text.trim();
     if (input.isEmpty) {
@@ -80,8 +98,8 @@ class InsertionSortLogic {
       nums.add(n);
     }
 
-    numbers = List.from(nums);
-    originalNumbers = List.from(nums);
+    numbers = _makeItemsFromInts(nums);
+    originalNumbers = _makeItemsFromInts(nums);
     _resetState();
     onStateChanged();
   }
@@ -96,8 +114,8 @@ class InsertionSortLogic {
   }
 
   void resetArray() {
-    numbers = List.from(defaultNumbers);
-    originalNumbers = List.from(defaultNumbers);
+    numbers = _makeItemsFromInts(_defaultNumbers);
+    originalNumbers = _makeItemsFromInts(_defaultNumbers);
     _resetState();
     inputError = null;
     inputController.clear();
@@ -107,7 +125,7 @@ class InsertionSortLogic {
   void _resetState() {
     currentI = -1;
     currentJ = -1;
-    keyElement = -1;
+    keyItem = null;
     keyIndex = -1;
     isInserting = false;
     isSorting = false;
@@ -177,6 +195,8 @@ class InsertionSortLogic {
   Future<void> startInsertionSort() async {
     if (isSorting) return;
 
+    if (numbers.isEmpty) return;
+
     isSorting = true;
     isSorted = false;
     shouldStop = false;
@@ -199,10 +219,11 @@ class InsertionSortLogic {
 
       currentI = i;
       highlightedLine = 2;
-      keyElement = numbers[i];
+      keyItem = numbers[i];
       keyIndex = i;
-      currentStep = "Pass ${i}: Taking element ${numbers[i]} as key";
-      operationIndicator = "🔑 Key element: ${numbers[i]} at position $i ($orderText order)";
+      int keyVal = keyItem!.value;
+      currentStep = "Pass ${i}: Taking element ${keyVal} as key";
+      operationIndicator = "🔑 Key element: ${keyVal} at position $i ($orderText order)";
       onStateChanged();
 
       await _waitIfPaused();
@@ -212,7 +233,7 @@ class InsertionSortLogic {
       // Initialize j
       highlightedLine = 3;
       currentJ = i - 1;
-      currentStep = "Comparing key ${numbers[i]} with sorted portion";
+      currentStep = "Comparing key ${numbers[i].value} with sorted portion";
       operationIndicator = "🔍 Starting comparison from position ${i - 1}";
       onStateChanged();
 
@@ -224,6 +245,12 @@ class InsertionSortLogic {
       highlightedLine = 4;
       int j = i - 1;
 
+      // Remove the key item from the list first to simplify shifting logic
+      // (preserves SortItem identity and avoids creating temporary empty slots)
+      numbers.removeAt(i);
+      // Clear keyIndex while keyItem is in transit to avoid coloring wrong index
+      keyIndex = -1;
+
       while (j >= 0) {
         if (shouldStop) break;
 
@@ -231,12 +258,12 @@ class InsertionSortLogic {
         currentJ = j;
 
         bool shouldShift = isAscending
-            ? numbers[j] > keyElement
-            : numbers[j] < keyElement;
+            ? numbers[j].value > keyItem!.value
+            : numbers[j].value < keyItem!.value;
 
         highlightedLine = 4;
-        currentStep = "Comparing ${numbers[j]} with key ${keyElement}";
-        operationIndicator = "🔍 Comparing: ${numbers[j]} vs ${keyElement} (key)";
+        currentStep = "Comparing ${numbers[j].value} with key ${keyItem!.value}";
+        operationIndicator = "🔍 Comparing: ${numbers[j].value} vs ${keyItem!.value} (key)";
         totalComparisons++;
         onStateChanged();
 
@@ -246,23 +273,18 @@ class InsertionSortLogic {
 
         if (shouldShift) {
           highlightedLine = 5;
-          currentStep = "Shifting ${numbers[j]} one position to the right";
-          operationIndicator = "➡️ Shifting: ${numbers[j]} from position $j to ${j + 1}";
+          currentStep = "${numbers[j].value} > key - will move to the right";
+          operationIndicator = "➡️ ${numbers[j].value} > ${keyItem!.value} - moving right";
 
-          // Perform the shift
-          numbers[j + 1] = numbers[j];
-          onStateChanged();
-
+          // When using removeAt/insert, elements automatically shift right; we just continue scanning
           await _waitIfPaused();
-          await Future.delayed(Duration(milliseconds: (800 / speed).round()));
-          if (shouldStop) break;
-
+          await Future.delayed(Duration(milliseconds: (300 / speed).round()));
           j--;
           currentJ = j;
         } else {
           highlightedLine = 6;
-          currentStep = "${numbers[j]} ${isAscending ? '≤' : '≥'} ${keyElement} - correct position found";
-          operationIndicator = "✓ Position found - ${numbers[j]} ${isAscending ? '≤' : '≥'} ${keyElement}";
+          currentStep = "${numbers[j].value} ${isAscending ? '≤' : '≥'} ${keyItem!.value} - correct position found";
+          operationIndicator = "✓ Position found - ${numbers[j].value} ${isAscending ? '≤' : '≥'} ${keyItem!.value}";
           onStateChanged();
 
           await _waitIfPaused();
@@ -276,9 +298,11 @@ class InsertionSortLogic {
       // Insert the key at correct position
       highlightedLine = 7;
       int insertPosition = j + 1;
+      // mark the intended insert position for coloring during insertion animation
+      keyIndex = insertPosition;
       isInserting = true;
-      currentStep = "Inserting key ${keyElement} at position ${insertPosition}";
-      operationIndicator = "📍 Inserting: ${keyElement} at position ${insertPosition}";
+      currentStep = "Inserting key ${keyItem!.value} at position ${insertPosition}";
+      operationIndicator = "📍 Inserting: ${keyItem!.value} at position ${insertPosition}";
       totalInsertions++;
       onStateChanged();
 
@@ -286,7 +310,8 @@ class InsertionSortLogic {
       await _animationController.forward();
       if (shouldStop) return;
 
-      numbers[insertPosition] = keyElement;
+      // Insert keyItem object at insertPosition
+      numbers.insert(insertPosition, keyItem!);
       onStateChanged();
 
       _animationController.reset();
@@ -298,9 +323,9 @@ class InsertionSortLogic {
 
       if (shouldStop) break;
 
-      currentStep = "Pass ${i} completed - element ${keyElement} is in correct position";
-      operationIndicator = "✅ Pass ${i} complete! Element ${keyElement} is sorted";
-      keyElement = -1;
+      currentStep = "Pass ${i} completed - element ${keyItem!.value} is in correct position";
+      operationIndicator = "✅ Pass ${i} complete! Element ${keyItem!.value} is sorted";
+      keyItem = null;
       keyIndex = -1;
       currentJ = -1;
       onStateChanged();
@@ -315,7 +340,7 @@ class InsertionSortLogic {
   void _finishSorting() {
     currentI = -1;
     currentJ = -1;
-    keyElement = -1;
+    keyItem = null;
     keyIndex = -1;
     isSorting = false;
     highlightedLine = -1;

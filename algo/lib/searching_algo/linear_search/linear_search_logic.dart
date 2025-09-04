@@ -40,6 +40,9 @@ class LinearSearchLogic {
   int highlightedLine = -1;
   bool isSpeedControlExpanded = false;
 
+  // Opt-in flag for new search card animation. Default false to preserve existing UI.
+  bool useSearchCardAnimation = true; // Changed to true to enable by default
+
   late AnimationController _animationController;
   late Animation<double> _searchAnimation;
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
+import '../../widgets/algorithm_app_bar.dart';
 import '../../widgets/expandable_action_fab.dart';
 import 'binary_search_logic.dart';
 import 'binary_search_widgets.dart';
@@ -36,10 +36,8 @@ class _BinarySearchPageState extends State<BinarySearchPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AlgorithmAppBar(
         title: const Text('Binary Search Algorithm Demo'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
         actions: [
           TextButton.icon(
             label: const Text(

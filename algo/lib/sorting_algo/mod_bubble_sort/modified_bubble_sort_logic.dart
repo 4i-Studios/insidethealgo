@@ -16,6 +16,11 @@ class ModifiedBubbleSortLogic {
     _swapAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+
+    // Notify UI during animation frames so AnimatedBubble can read swapProgress
+    _animationController.addListener(() {
+      onStateChanged();
+    });
   }
 
   // State variables
@@ -31,6 +36,12 @@ class ModifiedBubbleSortLogic {
   bool isSorting = false;
   bool isSorted = false;
   bool currentSwapped = false;
+
+  // New swap state fields for AnimatedBubble component
+  int swapFrom = -1;
+  int swapTo = -1;
+  int swapTick = 0;
+  double get swapProgress => _animationController.value;
 
   String currentStep = "Ready to start sorting";
   String operationIndicator = "";
@@ -288,6 +299,11 @@ class ModifiedBubbleSortLogic {
     await _waitIfPaused();
 
     highlightedLine = 5;
+
+    // set up swap endpoints and notify UI
+    swapFrom = j;
+    swapTo = j + 1;
+    swapTick++; // signal a new swap cycle to the AnimatedBubble
     isSwapping = true;
     currentStep = "Swapping ${numbers[j]} and ${numbers[j + 1]}";
     operationIndicator = "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
@@ -299,13 +315,17 @@ class ModifiedBubbleSortLogic {
     await _animationController.forward();
     if (shouldStop) return;
 
+    // swap the underlying array (visual will follow)
     int temp = numbers[j];
     numbers[j] = numbers[j + 1];
     numbers[j + 1] = temp;
     onStateChanged();
 
+    // reset animation controller and swap state
     _animationController.reset();
     isSwapping = false;
+    swapFrom = -1;
+    swapTo = -1;
 
     highlightedLine = 6;
     onStateChanged();

@@ -2,308 +2,125 @@ import 'package:flutter/material.dart';
 
 class InsertionSortGuide {
   static void show(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            controller: controller,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHandle(),
-                _buildTitle(),
-                const SizedBox(height: 20),
-                _buildHowItWorks(),
-                const SizedBox(height: 20),
-                _buildTimeComplexity(),
-                const SizedBox(height: 20),
-                _buildAdvantages(),
-                const SizedBox(height: 20),
-                _buildDisadvantages(),
-              ],
-            ),
+      builder: (context) => const InsertionSortGuideDialog(),
+    );
+  }
+}
+
+class InsertionSortGuideDialog extends StatelessWidget {
+  const InsertionSortGuideDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Insertion Sort Guide'),
+      content: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSection('What is Insertion Sort?', [
+                'Insertion Sort is a simple sorting algorithm that builds the final sorted array one element at a time.',
+                'It works by taking each element from the unsorted portion and inserting it into its correct position in the sorted portion.',
+                'Similar to how you might sort playing cards in your hands.',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('How it Works', [
+                '1. Start with the second element (index 1) as the first element is considered sorted',
+                '2. Store the current element as "key"',
+                '3. Compare the key with elements in the sorted portion (to the left)',
+                '4. Shift larger elements one position to the right',
+                '5. Insert the key at its correct position',
+                '6. Repeat for all remaining elements',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Time Complexity', [
+                'Best Case: O(n) - when array is already sorted',
+                'Average Case: O(n²) - typical random input',
+                'Worst Case: O(n²) - when array is reverse sorted',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Space Complexity', [
+                'O(1) - constant extra space needed',
+                'It sorts in-place, only using a constant amount of additional space',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Color Legend', [
+                '🟦 Blue: Unsorted elements',
+                '🟩 Green: Sorted portion',
+                '🟠 Orange: Current key being inserted',
+                '🟥 Red: Element being compared with key',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Advantages', [
+                'Simple implementation',
+                'Efficient for small datasets',
+                'Adaptive - performs well on nearly sorted data',
+                'Stable - maintains relative order of equal elements',
+                'In-place - requires only O(1) memory',
+                'Online - can sort a list as it receives it',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Disadvantages', [
+                'Inefficient for large datasets due to O(n²) complexity',
+                'More writes compared to selection sort',
+                'Not suitable for large arrays',
+              ]),
+              const SizedBox(height: 16),
+              _buildSection('Use Cases', [
+                'Small datasets (typically < 50 elements)',
+                'Nearly sorted data',
+                'As a subroutine in hybrid algorithms (like Timsort)',
+                'When simplicity is more important than efficiency',
+                'Real-time sorting of small incoming data',
+              ]),
+            ],
           ),
         ),
       ),
-    );
-  }
-
-  static Widget _buildHandle() {
-    return Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        margin: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(2),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
         ),
-      ),
+      ],
     );
   }
 
-  static Widget _buildTitle() {
-    return Row(
+  Widget _buildSection(String title, List<String> points) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.insert_chart, color: Colors.blue.shade700, size: 24),
-        const SizedBox(width: 8),
-        const Text(
-          'Insertion Sort Algorithm',
-          style: TextStyle(
-            fontSize: 20,
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
           ),
         ),
-      ],
-    );
-  }
-
-  static Widget _buildHowItWorks() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.tips_and_updates, color: Colors.orange.shade700, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'How it Works:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.shade100),
-          ),
-          child: Column(
+        const SizedBox(height: 8),
+        ...points.map((point) => Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildStepItem(1, 'Start from the second element (index 1) as the key'),
-              _buildStepItem(2, 'Compare the key with elements in the sorted portion (to its left)'),
-              _buildStepItem(3, 'Shift larger elements one position to the right'),
-              _buildStepItem(4, 'Insert the key at its correct position'),
-              _buildStepItem(5, 'Move to the next element and repeat'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildTimeComplexity() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.speed, color: Colors.purple.shade700, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'Time Complexity:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.purple.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.purple.shade100),
-          ),
-          child: Column(
-            children: [
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.trending_up, color: Colors.green),
-                title: const Text('Best Case: O(n)'),
-                subtitle: const Text('Already sorted array'),
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.trending_flat, color: Colors.orange),
-                title: const Text('Average Case: O(n²)'),
-                subtitle: const Text('Random order'),
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.trending_down, color: Colors.red),
-                title: const Text('Worst Case: O(n²)'),
-                subtitle: const Text('Reverse sorted'),
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.memory, color: Colors.green),
-                title: const Text('Space Complexity: O(1)'),
-                subtitle: const Text('In-place sorting'),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildAdvantages() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.thumb_up, color: Colors.green.shade700, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'Advantages:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.green.shade100),
-          ),
-          child: Column(
-            children: [
-              _buildAdvantageItem('Simple implementation and easy to understand'),
-              _buildAdvantageItem('Efficient for small datasets'),
-              _buildAdvantageItem('Adaptive - O(n) for nearly sorted arrays'),
-              _buildAdvantageItem('Stable - maintains relative order of equal elements'),
-              _buildAdvantageItem('In-place - requires only O(1) extra memory'),
-              _buildAdvantageItem('Online - can sort array as it receives it'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildDisadvantages() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.thumb_down, color: Colors.red.shade700, size: 20),
-            const SizedBox(width: 8),
-            const Text(
-              'Disadvantages:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.red.shade100),
-          ),
-          child: Column(
-            children: [
-              _buildDisadvantageItem('O(n²) time complexity for average and worst cases'),
-              _buildDisadvantageItem('Not efficient for large datasets'),
-              _buildDisadvantageItem('More writes compared to Selection Sort'),
-              _buildDisadvantageItem('Performance degrades quickly with input size'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static Widget _buildStepItem(int stepNumber, String description) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade700,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '$stepNumber',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+              const Text('• ', style: TextStyle(fontSize: 16)),
+              Expanded(
+                child: Text(
+                  point,
+                  style: const TextStyle(fontSize: 14),
                 ),
               ),
-            ),
+            ],
           ),
-          Expanded(
-            child: Text(
-              description,
-              style: const TextStyle(fontSize: 14, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildAdvantageItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.check_circle, color: Colors.green.shade600, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildDisadvantageItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.cancel, color: Colors.red.shade600, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-        ],
-      ),
+        )),
+      ],
     );
   }
 }

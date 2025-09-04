@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../widgets/color_legend.dart';
+import '../../widgets/status_chip.dart';
 import 'bubble_sort_logic.dart';
+import '../../widgets/animated_bubble.dart';
 
 class BubbleSortWidgets {
   final BubbleSortLogic logic;
@@ -74,190 +77,83 @@ class BubbleSortWidgets {
   }
 
   Widget buildAnimationArea(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.blue.shade50, Colors.white],
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildColorLegend(),
-          if (logic.isSorting || logic.isSorted) ...[
-            _buildStatusChips(context),
-            const SizedBox(height: 8),
-          ],
-          Expanded(child: _buildAnimatedBars(context)),
+return Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Colors.blue.shade50, Colors.white],
+    ),
+  ),
+  child: Column(
+    children: [
+      ColorLegend(
+        items: [
+          ColorLegendItem(color: Colors.blue, label: 'Unsorted'),
+          ColorLegendItem(color: Colors.orange, label: 'Selected'),
+          ColorLegendItem(color: Colors.purple, label: 'Compared'),
+          ColorLegendItem(color: Colors.red, label: 'Swapping'),
+          ColorLegendItem(color: Colors.green, label: 'Sorted'),
         ],
       ),
-    );
-  }
-
-  Widget _buildColorLegend() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildColorLegendItem(Colors.blue, 'Unsorted'),
-            const SizedBox(width: 16),
-            _buildColorLegendItem(Colors.orange, 'Comparing'),
-            const SizedBox(width: 16),
-            _buildColorLegendItem(Colors.red, 'Swapping'),
-            const SizedBox(width: 16),
-            _buildColorLegendItem(Colors.green, 'Sorted'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildColorLegendItem(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
-    );
-  }
-
-  Widget _buildStatusChips(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
+      if (logic.isSorting || logic.isSorted) ...[
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatusChip('Pass', '${logic.currentI + 1}', Colors.blue),
-            const SizedBox(width: 8),
-            _buildStatusChip('Position', '${logic.currentJ + 1}', Colors.purple),
-            const SizedBox(width: 8),
-            _buildStatusChip('Comparisons', '${logic.totalComparisons}', Colors.orange),
-            const SizedBox(width: 8),
-            _buildStatusChip('Swaps', '${logic.totalSwaps}', Colors.red),
+            StatusChip(label: 'Pass', value: '${logic.currentI + 1}', color: Colors.blue),
+            StatusChip(label: 'Position', value: '${logic.currentJ + 1}', color: Colors.purple),
+            StatusChip(label: 'Comparisons', value: '${logic.totalComparisons}', color: Colors.orange),
+            StatusChip(label: 'Swaps', value: '${logic.totalSwaps}', color: Colors.red),
           ],
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 8),
+      ],
+      Expanded(
+        child: LayoutBuilder(builder: (context, constraints) {
+          // Estimate content width so we can scroll when bubbles exceed screen width
+          const double bubbleWidth = 40;
+          const double spacing = 8;
+          final int count = logic.numbers.length;
+          final double totalWidth =  count * bubbleWidth + (count - 1) * spacing ;
+          final double screenWidth = MediaQuery.of(context).size.width;
+          final double contentWidth = totalWidth < screenWidth ? screenWidth : totalWidth;
 
-  Widget _buildStatusChip(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBars(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double totalHeight = constraints.maxHeight;
-        double reservedHeight = 30;
-        double availableBarHeight = (totalHeight - reservedHeight).clamp(20.0, double.infinity);
-        int maxNumber = logic.numbers.reduce((a, b) => a > b ? a : b);
-
-        return AnimatedBuilder(
-          animation: logic.swapAnimation,
-          builder: (context, child) {
-            return Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  height: totalHeight,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: logic.numbers.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      int value = entry.value;
-
-                      double offset = 0;
-                      if (logic.isSwapping) {
-                        if (index == logic.comparingIndex1) {
-                          offset = logic.swapAnimation.value * _getResponsiveSize(context, defaultSize: 34, minSize: 24);
-                        } else if (index == logic.comparingIndex2) {
-                          offset = -logic.swapAnimation.value * _getResponsiveSize(context, defaultSize: 34, minSize: 24);
-                        }
-                      }
-
-                      double minBarHeight = _getResponsiveSize(context, defaultSize: 10, minSize: 6);
-                      double calculatedHeight = (value / maxNumber) * availableBarHeight;
-                      double barHeight = calculatedHeight.clamp(minBarHeight, availableBarHeight);
-
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: _getResponsiveSize(context, defaultSize: 3, minSize: 2),
-                        ),
-                        child: Transform.translate(
-                          offset: Offset(offset, 0),
-                          child: SizedBox(
-                            height: totalHeight,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  value.toString(),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: _getResponsiveSize(context, defaultSize: 11, minSize: 9),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Container(
-                                  width: _getResponsiveSize(context, defaultSize: 28, minSize: 20),
-                                  height: barHeight,
-                                  decoration: BoxDecoration(
-                                    color: logic.getBarColor(index),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: contentWidth,
+              child: Center(
+                child: AnimatedBubble(
+                        numbers: logic.numbers,
+                        comparingIndex1: logic.comparingIndex1,
+                        comparingIndex2: logic.comparingIndex2,
+                        isSwapping: logic.isSwapping,
+                        swapFrom: logic.swapFrom,
+                        swapTo: logic.swapTo,
+                        swapProgress: logic.swapProgress,
+                        isSorted: logic.isSorted,
+                        swapTick: logic.swapTick,
+                      )
+                    // : BubbleSortAnimatedStack(
+                    //     numbers: logic.numbers,
+                    //     comparingIndex1: logic.comparingIndex1,
+                    //     comparingIndex2: logic.comparingIndex2,
+                    //     isSwapping: logic.isSwapping,
+                    //     swapFrom: logic.swapFrom,
+                    //     swapTo: logic.swapTo,
+                    //     swapProgress: logic.swapProgress,
+                    //     isSorted: logic.isSorted,
+                    //   ),
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          );
+        }),
+      ),
+    ],
+  ),
+);
   }
 
   Widget buildStatusDisplay(BuildContext context) {
@@ -445,7 +341,7 @@ class BubbleSortWidgets {
                   vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
                 ),
                 decoration: BoxDecoration(
-                  color: isHighlighted ? const Color(0xFF264F78).withOpacity(0.8) : Colors.transparent,
+                  color: isHighlighted ? const Color(0xFF264F78).withValues(alpha: 204) : Colors.transparent,
                   borderRadius: BorderRadius.circular(3),
                   border: isHighlighted ? Border.all(color: const Color(0xFF0E639C), width: 1) : null,
                 ),

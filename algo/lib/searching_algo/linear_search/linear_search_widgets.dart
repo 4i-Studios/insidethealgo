@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'linear_search_logic.dart';
+import '../../widgets/animated_search_card.dart';
 
 class LinearSearchWidgets {
   final LinearSearchLogic logic;
@@ -161,7 +162,16 @@ class LinearSearchWidgets {
             _buildStatusChips(context),
             const SizedBox(height: 8),
           ],
-          Expanded(child: _buildAnimatedBars(context)),
+          Expanded(
+            child: logic.useSearchCardAnimation
+                ? AnimatedSearchCard(
+                    numbers: logic.numbers,
+                    currentIndex: logic.currentIndex,
+                    foundIndex: logic.foundIndex,
+                    isSearching: logic.isSearching,
+                  )
+                : _buildAnimatedBars(context),
+          ),
         ],
       ),
     );
@@ -277,9 +287,9 @@ class LinearSearchWidgets {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 26),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 77)),
       ),
       child: Text(
         '$label: $value',
@@ -292,130 +302,130 @@ class LinearSearchWidgets {
     );
   }
 
-Widget _buildAnimatedBars(BuildContext context) {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      double totalHeight = constraints.maxHeight;
-      double reservedHeight = 40; // Reduced from 40 to 30
-      double availableBarHeight = (totalHeight - reservedHeight).clamp(
-        20.0,
-        double.infinity,
-      );
-      int maxNumber = logic.numbers.isNotEmpty
-          ? logic.numbers.reduce((a, b) => a > b ? a : b)
-          : 1;
+  Widget _buildAnimatedBars(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double totalHeight = constraints.maxHeight;
+        double reservedHeight = 40; // Reduced from 40 to 30
+        double availableBarHeight = (totalHeight - reservedHeight).clamp(
+          20.0,
+          double.infinity,
+        );
+        int maxNumber = logic.numbers.isNotEmpty
+            ? logic.numbers.reduce((a, b) => a > b ? a : b)
+            : 1;
 
-      return AnimatedBuilder(
-        animation: logic.searchAnimation,
-        builder: (context, child) {
-          return Center(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Container(
-                height: totalHeight,
-                padding: EdgeInsets.symmetric(
-                  horizontal: _getResponsiveSize(
-                    context,
-                    defaultSize: 16,
-                    minSize: 8,
+        return AnimatedBuilder(
+          animation: logic.searchAnimation,
+          builder: (context, child) {
+            return Center(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Container(
+                  height: totalHeight,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _getResponsiveSize(
+                      context,
+                      defaultSize: 16,
+                      minSize: 8,
+                    ),
+                  ),
+                  alignment: Alignment.bottomCenter,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: logic.numbers.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      int value = entry.value;
+
+                      double minBarHeight = _getResponsiveSize(
+                        context,
+                        defaultSize: 10,
+                        minSize: 6,
+                      );
+                      double calculatedHeight =
+                          (value / maxNumber) * availableBarHeight;
+                      double barHeight = calculatedHeight.clamp(
+                        minBarHeight,
+                        availableBarHeight,
+                      );
+
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _getResponsiveSize(
+                            context,
+                            defaultSize: 4,
+                            minSize: 2,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              '$value',
+                              style: TextStyle(
+                                fontSize: _getResponsiveSize(
+                                  context,
+                                  defaultSize: 12,
+                                  minSize: 10,
+                                ),
+                                fontWeight: FontWeight.bold,
+                                color: logic.getBarColor(index),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              width: _getResponsiveSize(
+                                context,
+                                defaultSize: 30,
+                                minSize: 20,
+                              ),
+                              height: barHeight,
+                              decoration: BoxDecoration(
+                                color: logic.getBarColor(index),
+                                borderRadius: BorderRadius.circular(4),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 26),
+                                    blurRadius: 2,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: logic.currentIndex == index && logic.isSearching
+                                  ? Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: Colors.orange.shade700,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$index',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: logic.numbers.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    int value = entry.value;
-
-                    double minBarHeight = _getResponsiveSize(
-                      context,
-                      defaultSize: 10,
-                      minSize: 6,
-                    );
-                    double calculatedHeight =
-                        (value / maxNumber) * availableBarHeight;
-                    double barHeight = calculatedHeight.clamp(
-                      minBarHeight,
-                      availableBarHeight,
-                    );
-
-                    return Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: _getResponsiveSize(
-                          context,
-                          defaultSize: 4,
-                          minSize: 2,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            '$value',
-                            style: TextStyle(
-                              fontSize: _getResponsiveSize(
-                                context,
-                                defaultSize: 12,
-                                minSize: 10,
-                              ),
-                              fontWeight: FontWeight.bold,
-                              color: logic.getBarColor(index),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            width: _getResponsiveSize(
-                              context,
-                              defaultSize: 30,
-                              minSize: 20,
-                            ),
-                            height: barHeight,
-                            decoration: BoxDecoration(
-                              color: logic.getBarColor(index),
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 2,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: logic.currentIndex == index && logic.isSearching
-                                ? Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: Colors.orange.shade700,
-                                        width: 2,
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$index',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
   Widget buildStatusDisplay(BuildContext context) {
     return Container(
@@ -640,7 +650,7 @@ Widget _buildAnimatedBars(BuildContext context) {
                 ),
                 decoration: BoxDecoration(
                   color: isHighlighted
-                      ? const Color(0xFF264F78).withOpacity(0.8)
+                      ? const Color(0xFF264F78).withValues(alpha: 204)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(3),
                   border: isHighlighted

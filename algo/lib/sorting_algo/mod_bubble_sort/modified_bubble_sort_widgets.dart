@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'modified_bubble_sort_logic.dart';
+import '../../widgets/animated_bubble.dart'; // <-- added import for the reusable component
 
 class ModifiedBubbleSortWidgets {
   final ModifiedBubbleSortLogic logic;
@@ -220,90 +221,30 @@ class ModifiedBubbleSortWidgets {
   Widget _buildAnimatedBars(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        double totalHeight = constraints.maxHeight;
-        double reservedHeight = 30;
-        double availableBarHeight = (totalHeight - reservedHeight).clamp(20.0, double.infinity);
-        int maxNumber = logic.numbers.reduce((a, b) => a > b ? a : b);
-
-        return AnimatedBuilder(
-          animation: logic.swapAnimation,
-          builder: (context, child) {
-            return Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  height: totalHeight,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: logic.numbers.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      int value = entry.value;
-
-                      double offset = 0;
-                      if (logic.isSwapping) {
-                        if (index == logic.comparingIndex1) {
-                          double barWidth = _getResponsiveSize(context, defaultSize: 30, minSize: 20);
-                          double spacing = _getResponsiveSize(context, defaultSize: 8, minSize: 4);
-                          offset = (barWidth + spacing) * logic.swapAnimation.value;
-                        } else if (index == logic.comparingIndex2) {
-                          double barWidth = _getResponsiveSize(context, defaultSize: 30, minSize: 20);
-                          double spacing = _getResponsiveSize(context, defaultSize: 8, minSize: 4);
-                          offset = -(barWidth + spacing) * logic.swapAnimation.value;
-                        }
-                      }
-
-                      double minBarHeight = _getResponsiveSize(context, defaultSize: 10, minSize: 6);
-                      double calculatedHeight = (value / maxNumber) * availableBarHeight;
-                      double barHeight = calculatedHeight.clamp(minBarHeight, availableBarHeight);
-
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
-                        ),
-                        child: Transform.translate(
-                          offset: Offset(offset, 0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                '$value',
-                                style: TextStyle(
-                                  fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                                  fontWeight: FontWeight.bold,
-                                  color: logic.getBarColor(index),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                width: _getResponsiveSize(context, defaultSize: 30, minSize: 20),
-                                height: barHeight,
-                                decoration: BoxDecoration(
-                                  color: logic.getBarColor(index),
-                                  borderRadius: BorderRadius.circular(4),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
+        // Keep LayoutBuilder in case parent relies on sizing; AnimatedBubble handles its own layout.
+        return Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              // preserve previous padding behavior
+              padding: EdgeInsets.symmetric(
+                horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
               ),
-            );
-          },
+              alignment: Alignment.center,
+              // Use the AnimatedBubble component here so animation logic is centralized
+              child: AnimatedBubble(
+                numbers: logic.numbers,
+                comparingIndex1: logic.comparingIndex1,
+                comparingIndex2: logic.comparingIndex2,
+                isSwapping: logic.isSwapping,
+                swapFrom: logic.swapFrom,
+                swapTo: logic.swapTo,
+                swapProgress: logic.swapProgress,
+                swapTick: logic.swapTick,
+                isSorted: logic.isSorted,
+              ),
+            ),
+          ),
         );
       },
     );
@@ -556,3 +497,4 @@ class ModifiedBubbleSortWidgets {
     return Colors.white;
   }
 }
+

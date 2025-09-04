@@ -43,14 +43,29 @@ class BubbleSortLogic {
   int highlightedLine = -1;
   bool isSpeedControlExpanded = false;
 
+  // Opt-in: use new bubble animation system. Default false to preserve existing UI.
+  bool useBubbleAnimation = true; // Changed to true to enable by default
+
+  // Backwards-compatible getter for widgets
+  bool get useBubbleAnimationEnabled => useBubbleAnimation;
+
   late AnimationController _animationController;
   late Animation<double> _swapAnimation;
+
+  // New: a simple tick counter to indicate a recent swap to the UI
+  int _lastSwapTick = 0;
+  int get swapTick => _lastSwapTick;
 
   final TextEditingController inputController = TextEditingController();
   String? inputError;
 
   // Getters
   Animation<double> get swapAnimation => _swapAnimation;
+
+  // Bubble animation getters for widget
+  int get swapFrom => comparingIndex1;
+  int get swapTo => comparingIndex2;
+  double get swapProgress => swapAnimation.value;
 
   void dispose() {
     _animationController.dispose();
@@ -282,6 +297,10 @@ class BubbleSortLogic {
     int temp = numbers[j];
     numbers[j] = numbers[j + 1];
     numbers[j + 1] = temp;
+
+    // Signal a recent swap to the UI widgets (increment tick)
+    _lastSwapTick++;
+
     onStateChanged();
 
     _animationController.reset();

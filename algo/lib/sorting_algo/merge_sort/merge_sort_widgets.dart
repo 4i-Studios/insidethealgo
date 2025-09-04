@@ -398,76 +398,69 @@ class MergeSortWidgets {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: logic.mergeIndex >= 0
-            ? Colors.red.shade100
-            : logic.isSorting
-            ? Colors.purple.shade100
+        color: logic.isSorting
+            ? Colors.orange.shade100
+            : logic.sortCompleted
+            ? Colors.green.shade100
             : Colors.blue.shade100,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: logic.mergeIndex >= 0
-              ? Colors.red.shade300
-              : logic.isSorting
-              ? Colors.purple.shade300
+          color: logic.isSorting
+              ? Colors.orange.shade300
+              : logic.sortCompleted
+              ? Colors.green.shade300
               : Colors.blue.shade300,
         ),
       ),
       child: Column(
         children: [
-          logic.operationIndicator.isNotEmpty
-              ? Text(
-                  logic.operationIndicator,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                )
-              : Text(
-                  logic.currentStep,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+          Text(
+            logic.operationIndicator.isNotEmpty
+                ? logic.operationIndicator
+                : logic.currentStep,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: logic.isSorting
+                  ? Colors.orange.shade800
+                  : logic.sortCompleted
+                  ? Colors.green.shade800
+                  : Colors.blue.shade800,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
   }
 
-  Widget buildCodeDisplay(BuildContext context) {
+  Widget buildCodeAndControlsArea(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Merge Sort Algorithm:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Merge Sort Algorithm Code:',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: SingleChildScrollView(child: _buildCodeDisplay(context)),
-          ),
-        ],
+            const SizedBox(height: 8),
+            _buildCodeDisplay(context),
+            const SizedBox(height: 100),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCodeDisplay(BuildContext context) {
     List<Map<String, dynamic>> codeLines = [
-      {
-        'line': 0,
-        'text': 'void mergeSort(List<int> arr, int left, int right) {',
-        'indent': 0,
-      },
+      {'line': 0, 'text': 'void mergeSort(List<int> arr, int left, int right) {', 'indent': 0},
       {'line': 1, 'text': '  if (left < right) {', 'indent': 1},
       {'line': 2, 'text': '    int mid = (left + right) ~/ 2;', 'indent': 2},
       {'line': 3, 'text': '    mergeSort(arr, left, mid);', 'indent': 2},
@@ -476,46 +469,20 @@ class MergeSortWidgets {
       {'line': 6, 'text': '  }', 'indent': 1},
       {'line': 7, 'text': '}', 'indent': 0},
       {'line': 8, 'text': '', 'indent': 0},
-      {
-        'line': 9,
-        'text': 'void merge(List<int> arr, int left, int mid, int right) {',
-        'indent': 0,
-      },
-      {
-        'line': 10,
-        'text': '  List<int> leftArr = arr.sublist(left, mid + 1);',
-        'indent': 1,
-      },
-      {
-        'line': 11,
-        'text': '  List<int> rightArr = arr.sublist(mid + 1, right + 1);',
-        'indent': 1,
-      },
-      {'line': 12, 'text': '  int i = 0, j = 0, k = left;', 'indent': 1},
-      {
-        'line': 13,
-        'text': '  while (i < leftArr.length && j < rightArr.length) {',
-        'indent': 1,
-      },
-      {'line': 14, 'text': '    if (leftArr[i] <= rightArr[j]) {', 'indent': 2},
-      {'line': 15, 'text': '      arr[k++] = leftArr[i++];', 'indent': 3},
-      {'line': 16, 'text': '    } else {', 'indent': 2},
-      {'line': 17, 'text': '      arr[k++] = rightArr[j++];', 'indent': 3},
-      {'line': 18, 'text': '    }', 'indent': 2},
-      {'line': 19, 'text': '  }', 'indent': 1},
-      {
-        'line': 20,
-        'text': '  while (i < leftArr.length) arr[k++] = leftArr[i++];',
-        'indent': 1,
-      },
-      {
-        'line': 21,
-        'text': '  while (j < rightArr.length) arr[k++] = rightArr[j++];',
-        'indent': 1,
-      },
+      {'line': 9, 'text': 'void merge(List<int> arr, int left, int mid, int right) {', 'indent': 0},
+      {'line': 10, 'text': '  // Create temporary arrays', 'indent': 1},
+      {'line': 11, 'text': '  List<int> leftArr = arr.sublist(left, mid + 1);', 'indent': 1},
+      {'line': 12, 'text': '  List<int> rightArr = arr.sublist(mid + 1, right + 1);', 'indent': 1},
+      {'line': 13, 'text': '  // Merge back into original array', 'indent': 1},
+      {'line': 14, 'text': '  int i = 0, j = 0, k = left;', 'indent': 1},
+      {'line': 15, 'text': '  while (i < leftArr.length && j < rightArr.length) {', 'indent': 1},
+      {'line': 16, 'text': '    if (leftArr[i] <= rightArr[j]) {', 'indent': 2},
+      {'line': 17, 'text': '      arr[k++] = leftArr[i++];', 'indent': 3},
+      {'line': 18, 'text': '    } else {', 'indent': 2},
+      {'line': 19, 'text': '      arr[k++] = rightArr[j++];', 'indent': 3},
+      {'line': 20, 'text': '    }', 'indent': 2},
+      {'line': 21, 'text': '  }', 'indent': 1},
       {'line': 22, 'text': '}', 'indent': 0},
-      if (logic.sortCompleted)
-        {'line': 23, 'text': '// Sorting Complete! ✨', 'indent': 0},
     ];
 
     return Container(
@@ -527,7 +494,10 @@ class MergeSortWidgets {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildCodeHeader(), _buildCodeContent(context, codeLines)],
+        children: [
+          _buildCodeHeader(),
+          _buildCodeContent(context, codeLines),
+        ],
       ),
     );
   }
@@ -544,101 +514,88 @@ class MergeSortWidgets {
       ),
       child: Row(
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-            ),
-          ),
+          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Container(
-            width: 12,
-            height: 12,
-            decoration: const BoxDecoration(
-              color: Colors.orange,
-              shape: BoxShape.circle,
-            ),
-          ),
+          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Container(
-            width: 12,
-            height: 12,
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
-            ),
-          ),
+          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
           const SizedBox(width: 16),
-          const Text(
-            'MergeSort.dart',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          const Text('MergeSort.dart', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
 
-  Widget _buildCodeContent(
-    BuildContext context,
-    List<Map<String, dynamic>> codeLines,
-  ) {
+  Widget _buildCodeContent(BuildContext context, List<Map<String, dynamic>> codeLines) {
     return Container(
       padding: const EdgeInsets.all(12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: codeLines.map((codeLine) {
-            bool isHighlighted = logic.highlightedLine == codeLine['line'];
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 1),
-              color: isHighlighted
-                  ? Colors.yellow.withOpacity(0.2)
-                  : Colors.transparent,
-              child: Row(
-                children: [
-                  SizedBox(width: codeLine['indent'] * 16.0),
-                  Text(
-                    codeLine['text'],
-                    style: TextStyle(
-                      color: _getCodeTextColor(codeLine['text']),
-                      fontSize: 12,
-                      fontFamily: 'Courier',
-                      height: 1.2,
+        child: IntrinsicWidth(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: codeLines.map((codeLine) {
+              bool isHighlighted = logic.highlightedLine == codeLine['line'];
+
+              return Container(
+                constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 32),
+                padding: EdgeInsets.symmetric(
+                  vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
+                  horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
+                ),
+                margin: EdgeInsets.symmetric(
+                  vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
+                ),
+                decoration: BoxDecoration(
+                  color: isHighlighted ? const Color(0xFF264F78).withValues(alpha: 204) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(3),
+                  border: isHighlighted ? Border.all(color: const Color(0xFF0E639C), width: 1) : null,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
+                      child: Text(
+                        '${codeLine['line'] + 1}',
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                          fontFamily: 'monospace',
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+                    SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
+                    SizedBox(width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12)),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: Text(
+                        codeLine['text'],
+                        style: TextStyle(
+                          color: _getCodeTextColor(codeLine['text']),
+                          fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
+                          fontFamily: 'monospace',
+                          fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );
   }
 
   Color _getCodeTextColor(String text) {
-    if (text.contains('void') ||
-        text.contains('int') ||
-        text.contains('if') ||
-        text.contains('while') ||
-        text.contains('else')) {
+    if (text.contains('void') || text.contains('if') || text.contains('while')) {
       return const Color(0xFF569CD6);
-    } else if (text.contains('arr[') ||
-        text.contains('left') ||
-        text.contains('right') ||
-        text.contains('mid') ||
-        text.contains('merge')) {
+    } else if (text.contains('arr[') || text.contains('left') || text.contains('right') || text.contains('mid')) {
       return const Color(0xFFDCDCAA);
     } else if (text.contains('}') || text.contains('//')) {
       return const Color(0xFF808080);
-    } else if (text.contains('Sorting Complete!')) {
-      return const Color(0xFF4EC9B0);
     }
     return Colors.white;
   }
