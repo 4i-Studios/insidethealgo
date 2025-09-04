@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../insertion_sort/insertion_sort_logic.dart';
 
 class SelectionSortLogic {
   final VoidCallback onStateChanged;
@@ -16,12 +17,17 @@ class SelectionSortLogic {
     _swapAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+
+    // initialize with default items
+    numbers = _makeItemsFromInts(defaultNumbers);
+    originalNumbers = List.from(numbers);
+    _resetState();
   }
 
   // State variables
   final List<int> defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
+  late List<SortItem> numbers;
+  late List<SortItem> originalNumbers;
 
   int currentI = -1;
   int currentJ = -1;
@@ -57,6 +63,12 @@ class SelectionSortLogic {
     inputController.dispose();
   }
 
+  // Helper to create SortItem list
+  List<SortItem> _makeItemsFromInts(List<int> list) {
+    int id = 0;
+    return list.map((v) => SortItem(id++, v)).toList();
+  }
+
   void setArrayFromInput(BuildContext context) {
     final input = inputController.text.trim();
     if (input.isEmpty) {
@@ -80,8 +92,8 @@ class SelectionSortLogic {
       nums.add(n);
     }
 
-    numbers = List.from(nums);
-    originalNumbers = List.from(nums);
+    numbers = _makeItemsFromInts(nums);
+    originalNumbers = _makeItemsFromInts(nums);
     _resetState();
     onStateChanged();
   }
@@ -96,8 +108,8 @@ class SelectionSortLogic {
   }
 
   void resetArray() {
-    numbers = List.from(defaultNumbers);
-    originalNumbers = List.from(defaultNumbers);
+    numbers = _makeItemsFromInts(defaultNumbers);
+    originalNumbers = _makeItemsFromInts(defaultNumbers);
     _resetState();
     inputError = null;
     inputController.clear();
@@ -210,8 +222,8 @@ class SelectionSortLogic {
       // Initialize minIndex
       highlightedLine = 2;
       minIndex = i;
-      currentStep = "Setting position $i as current ${isAscending ? 'minimum' : 'maximum'}: ${numbers[i]}";
-      operationIndicator = "🎯 Current ${isAscending ? 'min' : 'max'}: ${numbers[i]} at position $i";
+      currentStep = "Setting position $i as current ${isAscending ? 'minimum' : 'maximum'}: ${numbers[i].value}";
+      operationIndicator = "🎯 Current ${isAscending ? 'min' : 'max'}: ${numbers[i].value} at position $i";
       onStateChanged();
 
       await _waitIfPaused();
@@ -231,8 +243,8 @@ class SelectionSortLogic {
         currentJ = j;
         comparingIndex = j;
         highlightedLine = 4;
-        currentStep = "Comparing ${numbers[j]} with current ${isAscending ? 'minimum' : 'maximum'} ${numbers[minIndex]}";
-        operationIndicator = "🔍 Comparing: ${numbers[j]} vs ${numbers[minIndex]} (current ${isAscending ? 'min' : 'max'})";
+        currentStep = "Comparing ${numbers[j].value} with current ${isAscending ? 'minimum' : 'maximum'} ${numbers[minIndex].value}";
+        operationIndicator = "🔍 Comparing: ${numbers[j].value} vs ${numbers[minIndex].value} (current ${isAscending ? 'min' : 'max'})";
         totalComparisons++;
         onStateChanged();
 
@@ -241,21 +253,21 @@ class SelectionSortLogic {
         if (shouldStop) break;
 
         bool shouldUpdate = isAscending
-            ? numbers[j] < numbers[minIndex]
-            : numbers[j] > numbers[minIndex];
+            ? numbers[j].value < numbers[minIndex].value
+            : numbers[j].value > numbers[minIndex].value;
 
         if (shouldUpdate) {
           highlightedLine = 5;
           minIndex = j;
-          currentStep = "New ${isAscending ? 'minimum' : 'maximum'} found: ${numbers[j]} at position $j";
-          operationIndicator = "✨ New ${isAscending ? 'min' : 'max'}: ${numbers[j]} at position $j";
+          currentStep = "New ${isAscending ? 'minimum' : 'maximum'} found: ${numbers[j].value} at position $j";
+          operationIndicator = "✨ New ${isAscending ? 'min' : 'max'}: ${numbers[j].value} at position $j";
           onStateChanged();
 
           await _waitIfPaused();
           await Future.delayed(Duration(milliseconds: (800 / speed).round()));
         } else {
-          currentStep = "${numbers[j]} is ${isAscending ? 'not smaller than' : 'not larger than'} ${numbers[minIndex]}";
-          operationIndicator = "✓ ${numbers[j]} ${isAscending ? '≥' : '≤'} ${numbers[minIndex]} - no update needed";
+          currentStep = "${numbers[j].value} is ${isAscending ? 'not smaller than' : 'not larger than'} ${numbers[minIndex].value}";
+          operationIndicator = "✓ ${numbers[j].value} ${isAscending ? '≥' : '≤'} ${numbers[minIndex].value} - no update needed";
           onStateChanged();
 
           await _waitIfPaused();
@@ -275,8 +287,8 @@ class SelectionSortLogic {
         await _performSwap(i, minIndex);
       } else {
         highlightedLine = 8;
-        currentStep = "Element ${numbers[i]} is already in correct position";
-        operationIndicator = "✓ No swap needed - ${numbers[i]} is already in position $i";
+        currentStep = "Element ${numbers[i].value} is already in correct position";
+        operationIndicator = "✓ No swap needed - ${numbers[i].value} is already in position $i";
         onStateChanged();
 
         await _waitIfPaused();
@@ -285,8 +297,8 @@ class SelectionSortLogic {
 
       if (shouldStop) break;
 
-      currentStep = "Pass ${i + 1} completed - ${numbers[i]} is in correct position";
-      operationIndicator = "✅ Pass ${i + 1} complete! Element ${numbers[i]} is sorted";
+      currentStep = "Pass ${i + 1} completed - ${numbers[i].value} is in correct position";
+      operationIndicator = "✅ Pass ${i + 1} complete! Element ${numbers[i].value} is sorted";
       minIndex = -1;
       comparingIndex = -1;
       onStateChanged();
@@ -303,8 +315,8 @@ class SelectionSortLogic {
 
     highlightedLine = 8;
     isSwapping = true;
-    currentStep = "Swapping ${numbers[i]} at position $i with ${numbers[minIdx]} at position $minIdx";
-    operationIndicator = "🔄 Swapping: ${numbers[i]} ↔ ${numbers[minIdx]} (positions $i ↔ $minIdx)";
+    currentStep = "Swapping ${numbers[i].value} at position $i with ${numbers[minIdx].value} at position $minIdx";
+    operationIndicator = "🔄 Swapping: ${numbers[i].value} ↔ ${numbers[minIdx].value} (positions $i ↔ $minIdx)";
     totalSwaps++;
     onStateChanged();
 
@@ -312,9 +324,10 @@ class SelectionSortLogic {
     await _animationController.forward();
     if (shouldStop) return;
 
-    int temp = numbers[i];
+    // swap SortItem objects
+    final tmp = numbers[i];
     numbers[i] = numbers[minIdx];
-    numbers[minIdx] = temp;
+    numbers[minIdx] = tmp;
     onStateChanged();
 
     _animationController.reset();

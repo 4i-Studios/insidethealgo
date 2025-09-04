@@ -18,38 +18,28 @@ class AlgorithmLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Hide inputSection if simulation is running
-                if (!(inputSection is HideableInputSection && (inputSection as HideableInputSection).hide))
-                  inputSection,
-                Expanded(
-                  flex: 6,
-                  child: animationArea,
-                ),
-                if (statusDisplay != null) statusDisplay!,
-                Expanded(
-                  flex: 8,
-                  child: codeDisplay,
-                ),
-              ],
+            // Hide inputSection if simulation is running
+            if (!(inputSection is HideableInputSection && (inputSection as HideableInputSection).hide))
+              inputSection,
+            Expanded(
+              flex: 6,
+              child: animationArea,
             ),
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: floatingActionButton,
+            if (statusDisplay != null) statusDisplay!,
+            Expanded(
+              flex: 8,
+              child: codeDisplay,
             ),
           ],
         ),
-      ),
+        floatingActionButton,
+      ],
     );
   }
 }
@@ -58,7 +48,16 @@ class AlgorithmLayout extends StatelessWidget {
 class HideableInputSection extends StatelessWidget {
   final Widget child;
   final bool hide;
-  const HideableInputSection({required this.child, required this.hide});
+
+  const HideableInputSection({
+    Key? key,
+    required this.child,
+    required this.hide,
+  }) : super(key: key);
+
   @override
-  Widget build(BuildContext context) => hide ? const SizedBox.shrink() : child;
+  Widget build(BuildContext context) {
+    if (hide) return const SizedBox.shrink();
+    return child;
+  }
 }

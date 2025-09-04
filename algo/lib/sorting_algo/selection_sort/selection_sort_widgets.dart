@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../widgets/input_section.dart';
+import '../../widgets/metrics_panel.dart';
+import '../../widgets/status_display.dart';
+import '../../widgets/code_display.dart';
+import '../../widgets/animated_bubble.dart';
 import 'selection_sort_logic.dart';
 
 class SelectionSortWidgets {
@@ -6,74 +11,12 @@ class SelectionSortWidgets {
 
   SelectionSortWidgets(this.logic);
 
-  double _getResponsiveSize(
-      BuildContext context, {
-        required double defaultSize,
-        required double minSize,
-        double? maxSize,
-      }) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double size = (screenWidth / 400) * defaultSize;
-    return size.clamp(minSize, maxSize ?? defaultSize);
-  }
-
   Widget buildInputSection(BuildContext context) {
-    return Container(
-      color: Colors.blue.shade50,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: logic.inputController,
-                    keyboardType: TextInputType.text,
-                    style: const TextStyle(fontSize: 13),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                      hintText: 'Enter up to 10 numbers (e.g. 5,2,9)',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.blue.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
-                      errorText: null,
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Colors.red, width: 2),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                SizedBox(
-                  height: 36,
-                  child: ElevatedButton(
-                    onPressed: logic.isSorting ? null : () => logic.setArrayFromInput(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                      minimumSize: const Size(0, 36),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: const Text('Set', style: TextStyle(fontSize: 13)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
+    return InputSection(
+      controller: logic.inputController,
+      isDisabled: logic.isSorting,
+      onSetPressed: () => logic.setArrayFromInput(context),
+      hintText: 'Enter up to 10 numbers (e.g. 5,2,9)',
     );
   }
 
@@ -92,10 +35,35 @@ class SelectionSortWidgets {
         children: [
           _buildColorLegend(),
           if (logic.isSorting || logic.isSorted) ...[
-            _buildStatusChips(context),
+            const SizedBox(height: 8),
+            MetricsPanel(
+              metrics: [
+                MetricItem(label: 'Pass', value: logic.currentI >= 0 ? logic.currentI + 1 : '-', color: Colors.blue),
+                MetricItem(label: 'Position', value: logic.currentJ >= 0 ? logic.currentJ + 1 : '-', color: Colors.purple),
+                MetricItem(label: 'Comparisons', value: logic.totalComparisons, color: Colors.orange),
+                MetricItem(label: 'Swaps', value: logic.totalSwaps, color: Colors.red),
+                MetricItem(label: 'Array', value: logic.numbers.map((e) => e.value).toList(), color: Colors.grey, isArray: true),
+              ],
+              title: 'Metrics',
+              height: 48,
+            ),
             const SizedBox(height: 8),
           ],
-          Expanded(child: _buildAnimatedBars(context)),
+          Expanded(
+            child: Center(
+              child: AnimatedBubble(
+                numbers: logic.numbers.map((e) => e.value).toList(),
+                comparingIndex1: logic.comparingIndex,
+                comparingIndex2: logic.minIndex,
+                isSwapping: logic.isSwapping,
+                swapFrom: logic.currentI,
+                swapTo: logic.minIndex,
+                swapProgress: logic.swapAnimation.value,
+                isSorted: logic.isSorted,
+                swapTick: logic.totalSwaps,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -129,395 +97,94 @@ class SelectionSortWidgets {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
+        Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(fontSize: 12)),
       ],
     );
   }
 
-  Widget _buildStatusChips(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildStatusChip('Pass', '${logic.currentI + 1}', Colors.blue),
-            const SizedBox(width: 8),
-            _buildStatusChip('Position', '${logic.currentJ + 1}', Colors.purple),
-            const SizedBox(width: 8),
-            _buildStatusChip('Comparisons', '${logic.totalComparisons}', Colors.orange),
-            const SizedBox(width: 8),
-            _buildStatusChip('Swaps', '${logic.totalSwaps}', Colors.red),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Text(
-        '$label: $value',
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBars(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double totalHeight = constraints.maxHeight;
-        double reservedHeight = 30;
-        double availableBarHeight = (totalHeight - reservedHeight).clamp(20.0, double.infinity);
-        int maxNumber = logic.numbers.reduce((a, b) => a > b ? a : b);
-
-        return AnimatedBuilder(
-          animation: logic.swapAnimation,
-          builder: (context, child) {
-            return Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                  height: totalHeight,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _getResponsiveSize(context, defaultSize: 16, minSize: 8),
-                  ),
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: logic.numbers.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      int value = entry.value;
-
-                      double offset = 0;
-                      if (logic.isSwapping) {
-                        if (index == logic.currentI) {
-                          double barWidth = _getResponsiveSize(context, defaultSize: 30, minSize: 20);
-                          double spacing = _getResponsiveSize(context, defaultSize: 8, minSize: 4);
-                          offset = (logic.minIndex - logic.currentI).abs() * (barWidth + spacing) * logic.swapAnimation.value;
-                          if (logic.minIndex < logic.currentI) offset = -offset;
-                        } else if (index == logic.minIndex) {
-                          double barWidth = _getResponsiveSize(context, defaultSize: 30, minSize: 20);
-                          double spacing = _getResponsiveSize(context, defaultSize: 8, minSize: 4);
-                          offset = (logic.currentI - logic.minIndex).abs() * (barWidth + spacing) * logic.swapAnimation.value;
-                          if (logic.currentI < logic.minIndex) offset = -offset;
-                        }
-                      }
-
-                      double minBarHeight = _getResponsiveSize(context, defaultSize: 10, minSize: 6);
-                      double calculatedHeight = (value / maxNumber) * availableBarHeight;
-                      double barHeight = calculatedHeight.clamp(minBarHeight, availableBarHeight);
-
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
-                        ),
-                        child: Transform.translate(
-                          offset: Offset(offset, 0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                '$value',
-                                style: TextStyle(
-                                  fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                                  fontWeight: FontWeight.bold,
-                                  color: logic.getBarColor(index),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                width: _getResponsiveSize(context, defaultSize: 30, minSize: 20),
-                                height: barHeight,
-                                decoration: BoxDecoration(
-                                  color: logic.getBarColor(index),
-                                  borderRadius: BorderRadius.circular(4),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Widget buildStatusDisplay(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: logic.isSwapping
-            ? Colors.red.shade100
-            : logic.comparingIndex >= 0
-            ? Colors.orange.shade100
-            : Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: logic.isSwapping
-              ? Colors.red.shade300
-              : logic.comparingIndex >= 0
-              ? Colors.orange.shade300
-              : Colors.blue.shade300,
-        ),
-      ),
-      child: Column(
-        children: [
-          logic.operationIndicator.isNotEmpty
-              ? Text(
-            logic.operationIndicator,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: logic.isSwapping
-                  ? Colors.red.shade800
-                  : logic.comparingIndex >= 0
-                  ? Colors.orange.shade800
-                  : Colors.blue.shade800,
-            ),
-            textAlign: TextAlign.center,
-          )
-              : Text(
-            logic.currentStep,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+    Color bg;
+    Color border;
+    if (logic.isSwapping) {
+      bg = Colors.red.shade100;
+      border = Colors.red.shade300;
+    } else if (logic.comparingIndex >= 0) {
+      bg = Colors.orange.shade100;
+      border = Colors.orange.shade300;
+    } else {
+      bg = Colors.blue.shade100;
+      border = Colors.blue.shade300;
+    }
+
+    String message = logic.operationIndicator.isNotEmpty ? logic.operationIndicator : logic.currentStep;
+
+    return StatusDisplay(
+      message: message,
+      backgroundColor: bg,
+      borderColor: border,
     );
   }
 
   Widget buildCodeAndControlsArea(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'Selection Algorithm Code:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: logic.isSorting ? null : logic.toggleSortOrder,
-                  icon: Icon(
-                    logic.isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                    size: 16,
-                  ),
-                  label: Text(logic.isAscending ? 'Ascending' : 'Descending'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: logic.isAscending ? Colors.blue : Colors.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildCodeDisplay(context),
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCodeDisplay(BuildContext context) {
     int n = logic.numbers.length;
     String iValue = logic.currentI >= 0 ? '${logic.currentI}' : '0';
     String jValue = logic.currentJ >= 0 ? '${logic.currentJ}' : '${logic.currentI >= 0 ? logic.currentI + 1 : 1}';
     String minValue = logic.minIndex >= 0 ? '${logic.minIndex}' : iValue;
     String compareOp = logic.isAscending ? '<' : '>';
     String arrJ = (logic.currentJ >= 0 && logic.currentJ < logic.numbers.length)
-        ? '${logic.numbers[logic.currentJ]}'
+        ? '${logic.numbers[logic.currentJ].value}'
         : 'arr[j]';
     String arrMin = (logic.minIndex >= 0 && logic.minIndex < logic.numbers.length)
-        ? '${logic.numbers[logic.minIndex]}'
+        ? '${logic.numbers[logic.minIndex].value}'
         : 'arr[minIndex]';
 
-    List<Map<String, dynamic>> codeLines = [
-      {'line': 0, 'text': 'void selectionSort(List<int> arr, bool ascending) {', 'indent': 0},
-      {'line': 1, 'text': '  for (int i = $iValue; i < $n - 1; i++) {', 'indent': 1},
-      {'line': 2, 'text': '    int minIndex = $minValue;', 'indent': 2},
-      {'line': 3, 'text': '    for (int j = $jValue; j < $n; j++) {', 'indent': 2},
-      {'line': 4, 'text': '      if ($arrJ $compareOp $arrMin) {', 'indent': 3},
-      {'line': 5, 'text': '        minIndex = j;', 'indent': 4},
-      {'line': 6, 'text': '      }', 'indent': 3},
-      {'line': 7, 'text': '    }', 'indent': 2},
-      {'line': 8, 'text': '    swap(arr[i], arr[minIndex]);', 'indent': 2},
-      {'line': 9, 'text': '  }', 'indent': 1},
-      {'line': 10, 'text': '}', 'indent': 0},
-      {'line': 11, 'text': 'Sorting Complete!', 'indent': 0},
+    List<CodeLine> codeLines = [
+      CodeLine(line: 0, text: 'void selectionSort(List<int> arr, bool ascending) {', indent: 0),
+      CodeLine(line: 1, text: 'for (int i = $iValue; i < $n - 1; i++) {', indent: 1),
+      CodeLine(line: 2, text: 'int minIndex = $minValue;', indent: 2),
+      CodeLine(line: 3, text: 'for (int j = $jValue; j < $n; j++) {', indent: 2),
+      CodeLine(line: 4, text: 'if ($arrJ $compareOp $arrMin) {', indent: 3),
+      CodeLine(line: 5, text: 'minIndex = j;', indent: 4),
+      CodeLine(line: 6, text: '}', indent: 3),
+      CodeLine(line: 7, text: '}', indent: 2),
+      CodeLine(line: 8, text: 'swap(arr[i], arr[minIndex]);', indent: 2),
+      CodeLine(line: 9, text: '}', indent: 1),
     ];
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade600),
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCodeHeader(),
-          _buildCodeContent(context, codeLines),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCodeHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2D2D30),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle)),
-          const SizedBox(width: 6),
-          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle)),
-          const SizedBox(width: 6),
-          Container(width: 12, height: 12, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
-          const SizedBox(width: 16),
-          const Text('SelectionSort.dart', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCodeContent(BuildContext context, List<Map<String, dynamic>> codeLines) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: IntrinsicWidth(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: codeLines.map((codeLine) {
-              if (codeLine['line'] == 11 && !logic.isSorted) {
-                return const SizedBox.shrink();
-              }
-
-              bool isHighlighted = logic.highlightedLine == codeLine['line'];
-
-              return Container(
-                constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width - 32),
-                padding: EdgeInsets.symmetric(
-                  vertical: _getResponsiveSize(context, defaultSize: 2, minSize: 1),
-                  horizontal: _getResponsiveSize(context, defaultSize: 4, minSize: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Selection Algorithm Code:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue)),
+              ElevatedButton.icon(
+                onPressed: logic.isSorting ? null : logic.toggleSortOrder,
+                icon: Icon(logic.isAscending ? Icons.arrow_upward : Icons.arrow_downward, size: 18),
+                label: Text(logic.isAscending ? 'Ascending' : 'Descending'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: logic.isAscending ? Colors.blue : Colors.indigo,
+                  foregroundColor: Colors.white,
                 ),
-                margin: EdgeInsets.symmetric(
-                  vertical: _getResponsiveSize(context, defaultSize: 1, minSize: 0.5),
-                ),
-                decoration: BoxDecoration(
-                  color: isHighlighted ? const Color(0xFF264F78).withOpacity(0.8) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(3),
-                  border: isHighlighted ? Border.all(color: const Color(0xFF0E639C), width: 1) : null,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: _getResponsiveSize(context, defaultSize: 24, minSize: 20),
-                      child: Text(
-                        '${codeLine['line'] + 1}',
-                        style: TextStyle(
-                          fontSize: _getResponsiveSize(context, defaultSize: 12, minSize: 10),
-                          color: const Color(0xFF858585),
-                          fontFamily: 'Courier',
-                        ),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                    SizedBox(width: _getResponsiveSize(context, defaultSize: 8, minSize: 4)),
-                    SizedBox(width: codeLine['indent'] * _getResponsiveSize(context, defaultSize: 16, minSize: 12)),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: Text(
-                        codeLine['text'],
-                        style: TextStyle(
-                          fontSize: _getResponsiveSize(context, defaultSize: 13, minSize: 11),
-                          color: _getCodeTextColor(codeLine['text']),
-                          fontFamily: 'Courier',
-                          height: 1.3,
-                        ),
-                        overflow: TextOverflow.visible,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
-        ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 360,
+            child: CodeDisplay(
+              title: 'SelectionSort',
+              codeLines: codeLines,
+              highlightedLine: logic.highlightedLine,
+              getTextColor: (text) => Colors.white,
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Color _getCodeTextColor(String text) {
-    if (text.contains('void') || text.contains('for') || text.contains('if') || text.contains('int')) {
-      return const Color(0xFF569CD6);
-    } else if (text.contains('arr[') || text.contains('swap') || text.contains('minIndex')) {
-      return const Color(0xFFDCDCAA);
-    } else if (text.contains('}') || text.contains('//')) {
-      return const Color(0xFF808080);
-    } else if (text.contains('Sorting Complete!')) {
-      return const Color(0xFF4EC9B0);
-    }
-    return Colors.white;
   }
 }

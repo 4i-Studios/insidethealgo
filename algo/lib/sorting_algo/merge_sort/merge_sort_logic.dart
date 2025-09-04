@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+class SortItem {
+  final int id;
+  int value;
+  SortItem(this.id, this.value);
+}
+
+enum AnimationMode { tree, bubble, bars }
+
 class MergeSortLogic {
   final VoidCallback onStateChanged;
   final TickerProvider vsync;
@@ -9,56 +17,201 @@ class MergeSortLogic {
     required this.onStateChanged,
     required this.vsync,
   }) {
-    sortAnimation = AnimationController(
+    _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: vsync,
     );
-    _initializeColors();
-    arrayController.text = numbers.join(', ');
+    _mergeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    // Initialize arrays with default items
+    numbers = _makeItemsFromInts(_defaultNumbers);
+    originalNumbers = List.from(numbers);
+    _resetState();
   }
 
-  // Controllers
-  final TextEditingController arrayController = TextEditingController();
-
-  // Animation
-  late AnimationController sortAnimation;
-
   // State variables
-  List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  bool isSorting = false;
-  bool sortCompleted = false;
-  String currentStep = 'Enter numbers and start sorting';
-  String operationIndicator = '';
-  int totalSwaps = 0;
-  int totalComparisons = 0;
-  int highlightedLine = -1;
+  final List<int> _defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
 
-  // Speed control properties to match other sorting algorithms
-  double speed = 1.0;
-  bool isPaused = false;
-  bool isSpeedControlExpanded = false;
-  bool shouldStop = false;
+  // Use SortItem to keep identity across moves
+  late List<SortItem> numbers;
+  late List<SortItem> originalNumbers;
 
-  // Merge sort specific
-  List<int> leftArray = [];
-  List<int> rightArray = [];
+  // Merge sort specific state
+  List<SortItem> leftArray = [];
+  List<SortItem> rightArray = [];
+  List<SortItem> mergedArray = [];
   int leftIndex = -1;
   int rightIndex = -1;
   int mergeIndex = -1;
-  List<Color> barColors = [];
+  bool isMerging = false;
+  bool isDividing = false;
 
-  void _initializeColors() {
-    barColors = List.generate(numbers.length, (index) => Colors.blue);
-  }
+  String currentStep = "Ready to start sorting";
+  String operationIndicator = "";
+  int totalComparisons = 0;
+  int totalMerges = 0;
+
+  bool isSorting = false;
+  bool isSorted = false;
+  bool isAscending = true;
+  double speed = 1.0;
+  bool shouldStop = false;
+  bool isPaused = false;
+  int highlightedLine = -1;
+  bool isSpeedControlExpanded = false;
+
+  // Animation mode cycling
+  AnimationMode _animationMode = AnimationMode.tree;
+  AnimationMode get animationMode => _animationMode;
+
+  // Tree structure for visualization
+  List<TreeLevel> treeLevels = [];
+
+  late AnimationController _animationController;
+  late Animation<double> _mergeAnimation;
+
+  final TextEditingController inputController = TextEditingController();
+  String? inputError;
+
+  // Getters
+  Animation<double> get mergeAnimation => _mergeAnimation;
 
   void dispose() {
-    sortAnimation.dispose();
-    arrayController.dispose();
+    _animationController.dispose();
+    inputController.dispose();
+  }
+
+  // Helper to create SortItem list
+  List<SortItem> _makeItemsFromInts(List<int> list) {
+    int id = 0;
+    return list.map((v) => SortItem(id++, v)).toList();
+  }
+
+  void cycleAnimationMode() {
+    switch (_animationMode) {
+      case AnimationMode.tree:
+        _animationMode = AnimationMode.bubble;
+        break;
+      case AnimationMode.bubble:
+        _animationMode = AnimationMode.bars;
+        break;
+      case AnimationMode.bars:
+        _animationMode = AnimationMode.tree;
+        break;
+    }
+    onStateChanged();
+  }
+
+  String get animationModeLabel {
+    switch (_animationMode) {
+      case AnimationMode.tree:
+        return "Tree View";
+      case AnimationMode.bubble:
+        return "Bubble View";
+      case AnimationMode.bars:
+        return "Bar Chart";
+    }
+  }
+
+  void setArrayFromInput(BuildContext context) {
+    final input = inputController.text.trim();
+    if (input.isEmpty) {
+      _showSnackBar(context, 'Input required');
+      return;
+    }
+
+    final parts = input.split(',').map((e) => e.trim()).toList();
+    if (parts.length < 2 || parts.length > 10) {
+      _showSnackBar(context, 'Enter 2-10 numbers');
+      return;
+    }
+
+    final nums = <int>[];
+    for (final part in parts) {
+      final n = int.tryParse(part);
+      if (n == null) {
+        _showSnackBar(context, 'Only integers allowed');
+        return;
+      }
+      nums.add(n);
+    }
+
+    numbers = _makeItemsFromInts(nums);
+    originalNumbers = _makeItemsFromInts(nums);
+    _resetState();
+    onStateChanged();
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void resetArray() {
+    numbers = _makeItemsFromInts(_defaultNumbers);
+    originalNumbers = _makeItemsFromInts(_defaultNumbers);
+    _resetState();
+    inputError = null;
+    inputController.clear();
+    onStateChanged();
+  }
+
+  void _resetState() {
+    leftArray = [];
+    rightArray = [];
+    mergedArray = [];
+    leftIndex = -1;
+    rightIndex = -1;
+    mergeIndex = -1;
+    isMerging = false;
+    isDividing = false;
+    isSorting = false;
+    isSorted = false;
+    shouldStop = false;
+    highlightedLine = -1;
+    currentStep = "Ready to start sorting";
+    operationIndicator = "";
+    totalComparisons = 0;
+    totalMerges = 0;
+    treeLevels = [];
+  }
+
+  void stopSorting() {
+    shouldStop = true;
+    isSorting = false;
+    highlightedLine = -1;
+    currentStep = "Sorting stopped by user";
+    operationIndicator = "⏹️ Sorting process halted";
+    onStateChanged();
+  }
+
+  void toggleSortOrder() {
+    if (!isSorting) {
+      isAscending = !isAscending;
+      currentStep = isAscending
+          ? "Ready to start sorting (Ascending)"
+          : "Ready to start sorting (Descending)";
+      onStateChanged();
+    }
   }
 
   void updateSpeed(double newSpeed) {
     speed = newSpeed;
+    onStateChanged();
+  }
+
+  void shuffleArray() {
+    numbers.shuffle();
+    originalNumbers = List.from(numbers);
+    _resetState();
+    currentStep = isAscending
+        ? "Array shuffled - Ready to start sorting (Ascending)"
+        : "Array shuffled - Ready to start sorting (Descending)";
     onStateChanged();
   }
 
@@ -71,14 +224,8 @@ class MergeSortLogic {
     if (isSorting) {
       isPaused = !isPaused;
     } else {
-      startSort();
+      startMergeSort();
     }
-    onStateChanged();
-  }
-
-  void stopSorting() {
-    shouldStop = true;
-    isSorting = false;
     onStateChanged();
   }
 
@@ -88,223 +235,193 @@ class MergeSortLogic {
     }
   }
 
-  void setArrayFromInput(BuildContext context) {
-    try {
-      String input = arrayController.text.trim();
-      if (input.isEmpty) {
-        _showSnackBar(context, 'Please enter some numbers');
-        return;
-      }
-
-      List<String> parts = input.split(',');
-      List<int> newNumbers = parts.map((e) => int.parse(e.trim())).toList();
-
-      if (newNumbers.isEmpty) {
-        _showSnackBar(context, 'Please enter valid numbers');
-        return;
-      }
-
-      if (newNumbers.length > 20) {
-        _showSnackBar(context, 'Maximum 20 numbers allowed');
-        return;
-      }
-
-      numbers = newNumbers;
-      originalNumbers = List.from(numbers);
-      _resetSortingState();
-      _initializeColors();
-      onStateChanged();
-    } catch (e) {
-      _showSnackBar(context, 'Please enter valid numbers separated by commas');
-    }
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  void _resetSortingState() {
-    isSorting = false;
-    sortCompleted = false;
-    currentStep = 'Enter numbers and start sorting';
-    operationIndicator = '';
-    totalSwaps = 0;
-    totalComparisons = 0;
-    highlightedLine = -1;
-    leftArray = [];
-    rightArray = [];
-    leftIndex = -1;
-    rightIndex = -1;
-    mergeIndex = -1;
-    _initializeColors();
-  }
-
-  void resetArray() {
-    numbers = List.from(originalNumbers);
-    _resetSortingState();
-    onStateChanged();
-  }
-
-  void shuffleArray() {
-    if (!isSorting) {
-      numbers.shuffle();
-      originalNumbers = List.from(numbers);
-      arrayController.text = numbers.join(', ');
-      _resetSortingState();
-      onStateChanged();
-    }
-  }
-
-  Future<void> startSort() async {
-    if (isSorting || numbers.isEmpty) return;
+  Future<void> startMergeSort() async {
+    if (isSorting) return;
+    if (numbers.isEmpty) return;
 
     isSorting = true;
-    sortCompleted = false;
-    totalSwaps = 0;
+    isSorted = false;
+    shouldStop = false;
+    isPaused = false;
     totalComparisons = 0;
+    totalMerges = 0;
+
+    currentStep = isAscending
+        ? "Starting merge sort (ascending)..."
+        : "Starting merge sort (descending)...";
     highlightedLine = 0;
-    currentStep = 'Starting merge sort...';
+
     onStateChanged();
 
-    await _mergeSort(0, numbers.length - 1);
+    // Build initial tree structure
+    _buildInitialTreeStructure();
+
+    // Perform merge sort
+    List<SortItem> sortedArray = List.from(numbers);
+    await _mergeSort(sortedArray, 0, numbers.length - 1);
+
+    if (!shouldStop) {
+      numbers = sortedArray;
+      isSorted = true;
+      currentStep = "Sorting completed!";
+      operationIndicator = "✅ Array successfully sorted using merge sort";
+      highlightedLine = -1;
+    }
 
     isSorting = false;
-    sortCompleted = true;
-    currentStep = 'Sorting completed!';
-    operationIndicator = 'Array is now sorted! ✨';
-    highlightedLine = -1;
-    _initializeColors();
     onStateChanged();
   }
 
-  Future<void> _mergeSort(int left, int right) async {
+  void _buildInitialTreeStructure() {
+    treeLevels.clear();
+    _addTreeLevel([...numbers]);
+  }
+
+  void _addTreeLevel(List<SortItem> items) {
+    if (treeLevels.length > 4) return; // Limit depth
+    treeLevels.add(TreeLevel(items: [...items], level: treeLevels.length));
+  }
+
+  Future<void> _mergeSort(List<SortItem> arr, int left, int right) async {
     if (shouldStop) return;
+    await _waitIfPaused();
 
     if (left < right) {
+      // Divide step
+      isDividing = true;
+      int mid = left + (right - left) ~/ 2;
+
+      currentStep = "Dividing array from index $left to $right";
+      operationIndicator = "📋 Split: [${left}-${mid}] | [${mid+1}-${right}]";
       highlightedLine = 1;
-      int mid = (left + right) ~/ 2;
 
-      operationIndicator = 'Dividing array: [${left}, ${right}] → [${left}, ${mid}] and [${mid + 1}, ${right}]';
-      _highlightRange(left, right, Colors.orange);
       onStateChanged();
+      await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
 
-      await _waitIfPaused();
-      await Future.delayed(Duration(milliseconds: (800 / speed).round()));
+      // Recursively sort both halves
+      await _mergeSort(arr, left, mid);
+      if (shouldStop) return;
 
-      // Recursively sort left and right halves
-      await _mergeSort(left, mid);
-      await _mergeSort(mid + 1, right);
+      await _mergeSort(arr, mid + 1, right);
+      if (shouldStop) return;
 
-      // Merge the sorted halves
-      await _merge(left, mid, right);
+      // Merge step
+      await _merge(arr, left, mid, right);
     }
   }
 
-  Future<void> _merge(int left, int mid, int right) async {
+  Future<void> _merge(List<SortItem> arr, int left, int mid, int right) async {
     if (shouldStop) return;
+    await _waitIfPaused();
 
-    highlightedLine = 5;
+    isMerging = true;
+    isDividing = false;
 
     // Create temporary arrays
-    List<int> leftArr = numbers.sublist(left, mid + 1);
-    List<int> rightArr = numbers.sublist(mid + 1, right + 1);
+    List<SortItem> leftArr = [];
+    List<SortItem> rightArr = [];
+
+    for (int i = left; i <= mid; i++) {
+      leftArr.add(SortItem(arr[i].id, arr[i].value));
+    }
+    for (int i = mid + 1; i <= right; i++) {
+      rightArr.add(SortItem(arr[i].id, arr[i].value));
+    }
 
     leftArray = leftArr;
     rightArray = rightArr;
 
-    operationIndicator = 'Merging: Left[${leftArr.join(',')}] Right[${rightArr.join(',')}]';
-    _highlightRange(left, right, Colors.purple);
-    onStateChanged();
+    currentStep = "Merging subarrays";
+    operationIndicator = "🔀 Merging: [${leftArr.map((e) => e.value).join(',')}] + [${rightArr.map((e) => e.value).join(',')}]";
+    highlightedLine = 3;
 
-    await _waitIfPaused();
-    await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+    onStateChanged();
+    await Future.delayed(Duration(milliseconds: (800 / speed).round()));
 
     int i = 0, j = 0, k = left;
 
-    // Merge the arrays
-    while (i < leftArr.length && j < rightArr.length && !shouldStop) {
-      highlightedLine = 8;
-      totalComparisons++;
+    while (i < leftArr.length && j < rightArr.length) {
+      if (shouldStop) return;
+      await _waitIfPaused();
 
+      totalComparisons++;
       leftIndex = i;
       rightIndex = j;
       mergeIndex = k;
 
-      if (leftArr[i] <= rightArr[j]) {
-        operationIndicator = 'Comparing: ${leftArr[i]} ≤ ${rightArr[j]} → Take ${leftArr[i]}';
-        numbers[k] = leftArr[i];
+      bool condition = isAscending
+          ? leftArr[i].value <= rightArr[j].value
+          : leftArr[i].value >= rightArr[j].value;
+
+      if (condition) {
+        currentStep = "Taking ${leftArr[i].value} from left array";
+        operationIndicator = "📥 ${leftArr[i].value} → position $k";
+        arr[k] = SortItem(leftArr[i].id, leftArr[i].value);
         i++;
       } else {
-        operationIndicator = 'Comparing: ${leftArr[i]} > ${rightArr[j]} → Take ${rightArr[j]}';
-        numbers[k] = rightArr[j];
+        currentStep = "Taking ${rightArr[j].value} from right array";
+        operationIndicator = "📥 ${rightArr[j].value} → position $k";
+        arr[k] = SortItem(rightArr[j].id, rightArr[j].value);
         j++;
       }
 
-      barColors[k] = Colors.green;
       k++;
-      totalSwaps++;
-
+      highlightedLine = 4;
       onStateChanged();
-      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (600 / speed).round()));
     }
 
     // Copy remaining elements
-    while (i < leftArr.length && !shouldStop) {
-      highlightedLine = 13;
-      leftIndex = i;
-      mergeIndex = k;
-      operationIndicator = 'Copying remaining left element: ${leftArr[i]}';
-      numbers[k] = leftArr[i];
-      barColors[k] = Colors.green;
+    while (i < leftArr.length) {
+      if (shouldStop) return;
+      await _waitIfPaused();
+
+      arr[k] = SortItem(leftArr[i].id, leftArr[i].value);
+      currentStep = "Copying remaining element ${leftArr[i].value}";
+      operationIndicator = "📥 ${leftArr[i].value} → position $k";
       i++;
       k++;
-      totalSwaps++;
       onStateChanged();
-      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (400 / speed).round()));
     }
 
-    while (j < rightArr.length && !shouldStop) {
-      highlightedLine = 16;
-      rightIndex = j;
-      mergeIndex = k;
-      operationIndicator = 'Copying remaining right element: ${rightArr[j]}';
-      numbers[k] = rightArr[j];
-      barColors[k] = Colors.green;
+    while (j < rightArr.length) {
+      if (shouldStop) return;
+      await _waitIfPaused();
+
+      arr[k] = SortItem(rightArr[j].id, rightArr[j].value);
+      currentStep = "Copying remaining element ${rightArr[j].value}";
+      operationIndicator = "📥 ${rightArr[j].value} → position $k";
       j++;
       k++;
-      totalSwaps++;
       onStateChanged();
-      await _waitIfPaused();
       await Future.delayed(Duration(milliseconds: (400 / speed).round()));
     }
 
+    totalMerges++;
+    isMerging = false;
     leftIndex = -1;
     rightIndex = -1;
     mergeIndex = -1;
-    operationIndicator = 'Merged successfully!';
+    leftArray = [];
+    rightArray = [];
+
+    currentStep = "Merge complete for range [$left-$right]";
+    operationIndicator = "✅ Subarray merged successfully";
 
     onStateChanged();
-    await _waitIfPaused();
     await Future.delayed(Duration(milliseconds: (500 / speed).round()));
   }
+}
 
-  void _highlightRange(int start, int end, Color color) {
-    for (int i = 0; i < barColors.length; i++) {
-      if (i >= start && i <= end) {
-        barColors[i] = color;
-      } else {
-        barColors[i] = Colors.blue;
-      }
-    }
-  }
+class TreeLevel {
+  final List<SortItem> items;
+  final int level;
+  bool isActive;
 
-  Color getBarColor(int index) {
-    if (index == mergeIndex && isSorting) return Colors.red;
-    if (sortCompleted) return Colors.green;
-    return barColors[index];
-  }
+  TreeLevel({
+    required this.items,
+    required this.level,
+    this.isActive = false,
+  });
 }

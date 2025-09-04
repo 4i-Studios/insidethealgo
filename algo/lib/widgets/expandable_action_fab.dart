@@ -61,12 +61,20 @@ class _ExpandableActionFabState extends State<ExpandableActionFab>
       curve: const Interval(0.3, 1.0, curve: Curves.elasticOut),
     );
 
-    // Create staggered animations for each button
-    _buttonStaggeredAnimations = List.generate(4, (index) {
-      // Reverse the index so bottom button (index 3) starts first
-      int reversedIndex = 3 - index;
-      double startInterval =
-          0.3 + (reversedIndex * 0.1); // Bottom button starts first
+    // Initialize empty list - will be populated in didChangeDependencies or didUpdateWidget
+    _buttonStaggeredAnimations = [];
+  }
+
+  void _updateButtonAnimations() {
+    // Clear existing animations
+    _buttonStaggeredAnimations.clear();
+
+    // Create animations based on actual button count
+    final int buttonCount = widget.actionButtons.length;
+    _buttonStaggeredAnimations = List.generate(buttonCount, (index) {
+      // Reverse the index so bottom button starts first
+      int reversedIndex = (buttonCount - 1) - index;
+      double startInterval = 0.3 + (reversedIndex * 0.1); // Bottom button starts first
       double endInterval = startInterval + 0.25; // Shorter, snappier animation
       return CurvedAnimation(
         parent: _controller,
@@ -80,6 +88,12 @@ class _ExpandableActionFabState extends State<ExpandableActionFab>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateButtonAnimations();
+  }
+
+  @override
   void didUpdateWidget(ExpandableActionFab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isExpanded != oldWidget.isExpanded) {
@@ -88,6 +102,11 @@ class _ExpandableActionFabState extends State<ExpandableActionFab>
       } else {
         _controller.reverse();
       }
+    }
+
+    // Update button animations if the action buttons list has changed
+    if (widget.actionButtons != oldWidget.actionButtons) {
+      _updateButtonAnimations();
     }
   }
 
@@ -134,7 +153,7 @@ class _ExpandableActionFabState extends State<ExpandableActionFab>
                             boxShadow: staggeredAnimation.value > 0.5
                                 ? [
                                     BoxShadow(
-                                      color: button.color.withOpacity(0.3),
+                                      color: button.color.withValues(alpha: 0.3),
                                       blurRadius: (8 * staggeredAnimation.value)
                                           .clamp(0.0, 8.0),
                                       offset: const Offset(0, 2),

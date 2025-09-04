@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../widgets/expandable_action_fab.dart';
 import '../../widgets/algorithm_app_bar.dart';
 import '../../widgets/algorithm_layout.dart';
-import '../../widgets/expandable_action_fab.dart';
 import 'merge_sort_logic.dart';
 import 'merge_sort_widgets.dart';
 import 'merge_sort_guide.dart';
@@ -65,9 +65,7 @@ class _MergeSortPageState extends State<MergeSortPage>
           onTap: () => _logic.toggleSpeedControl(),
           actionButtons: [
             ActionButton(
-              onPressed: _logic.isSorting
-                  ? (_logic.isPaused ? _logic.onPlayPausePressed : _logic.onPlayPausePressed)
-                  : _logic.onPlayPausePressed,
+              onPressed: _logic.onPlayPausePressed,
               icon: _logic.isSorting
                   ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
                   : Icons.play_arrow,
@@ -93,6 +91,12 @@ class _MergeSortPageState extends State<MergeSortPage>
               icon: Icons.shuffle,
               label: 'Shuffle',
               color: Colors.purple,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSorting ? _logic.toggleSortOrder : null,
+              icon: _logic.isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+              label: _logic.isAscending ? 'Asc' : 'Desc',
+              color: Colors.blue,
             ),
           ],
         ),

@@ -29,17 +29,17 @@ class CodeDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          // Text(
+          //   title,
+          //   style: const TextStyle(
+          //     fontSize: 16,
+          //     fontWeight: FontWeight.bold,
+          //   ),
+          // ),
           const SizedBox(height: 8),
           Expanded(
             child: SingleChildScrollView(

@@ -158,7 +158,7 @@ class InsertionSortWidgets {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -177,7 +177,7 @@ class InsertionSortWidgets {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          // const SizedBox(height: 8),
           SizedBox(
             height: 400,
             child: CodeDisplay(

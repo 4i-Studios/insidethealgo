@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../insertion_sort/insertion_sort_logic.dart';
 
 class ModifiedBubbleSortLogic {
   final VoidCallback onStateChanged;
@@ -21,12 +22,17 @@ class ModifiedBubbleSortLogic {
     _animationController.addListener(() {
       onStateChanged();
     });
+
+    // initialize with default items
+    numbers = _makeItemsFromInts(defaultNumbers);
+    originalNumbers = List.from(numbers);
+    _resetState();
   }
 
   // State variables
   final List<int> defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> numbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
-  List<int> originalNumbers = [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
+  late List<SortItem> numbers;
+  late List<SortItem> originalNumbers;
 
   int currentI = -1;
   int currentJ = -1;
@@ -69,6 +75,12 @@ class ModifiedBubbleSortLogic {
     inputController.dispose();
   }
 
+  // Helper to create SortItem list
+  List<SortItem> _makeItemsFromInts(List<int> list) {
+    int id = 0;
+    return list.map((v) => SortItem(id++, v)).toList();
+  }
+
   void setArrayFromInput(BuildContext context) {
     final input = inputController.text.trim();
     if (input.isEmpty) {
@@ -92,8 +104,8 @@ class ModifiedBubbleSortLogic {
       nums.add(n);
     }
 
-    numbers = List.from(nums);
-    originalNumbers = List.from(nums);
+    numbers = _makeItemsFromInts(nums);
+    originalNumbers = _makeItemsFromInts(nums);
     _resetState();
     onStateChanged();
   }
@@ -108,8 +120,8 @@ class ModifiedBubbleSortLogic {
   }
 
   void resetArray() {
-    numbers = List.from(defaultNumbers);
-    originalNumbers = List.from(defaultNumbers);
+    numbers = _makeItemsFromInts(defaultNumbers);
+    originalNumbers = _makeItemsFromInts(defaultNumbers);
     _resetState();
     inputError = null;
     inputController.clear();
@@ -131,6 +143,8 @@ class ModifiedBubbleSortLogic {
     totalComparisons = 0;
     totalSwaps = 0;
     currentSwapped = false;
+    swapFrom = -1;
+    swapTo = -1;
   }
 
   void stopSorting() {
@@ -243,8 +257,8 @@ class ModifiedBubbleSortLogic {
         highlightedLine = 4;
         comparingIndex1 = j;
         comparingIndex2 = j + 1;
-        currentStep = "Comparing ${numbers[j]} and ${numbers[j + 1]}";
-        operationIndicator = "🔍 Comparing: ${numbers[j]} vs ${numbers[j + 1]}";
+        currentStep = "Comparing ${numbers[j].value} and ${numbers[j + 1].value}";
+        operationIndicator = "🔍 Comparing: ${numbers[j].value} vs ${numbers[j + 1].value}";
         totalComparisons++;
         onStateChanged();
 
@@ -253,15 +267,15 @@ class ModifiedBubbleSortLogic {
         if (shouldStop) break;
 
         bool shouldSwap = isAscending
-            ? numbers[j] > numbers[j + 1]
-            : numbers[j] < numbers[j + 1];
+            ? numbers[j].value > numbers[j + 1].value
+            : numbers[j].value < numbers[j + 1].value;
 
         if (shouldSwap) {
           await _performSwap(j);
           swapped = true;
         } else {
-          currentStep = "No swap needed - ${isAscending ? '${numbers[j]} ≤ ${numbers[j + 1]}' : '${numbers[j]} ≥ ${numbers[j + 1]}'}";
-          operationIndicator = "✓ No swap: ${isAscending ? '${numbers[j]} ≤ ${numbers[j + 1]}' : '${numbers[j]} ≥ ${numbers[j + 1]}'} (already in order)";
+          currentStep = "No swap needed - ${isAscending ? '${numbers[j].value} ≤ ${numbers[j + 1].value}' : '${numbers[j].value} ≥ ${numbers[j + 1].value}'}";
+          operationIndicator = "✓ No swap: ${isAscending ? '${numbers[j].value} ≤ ${numbers[j + 1].value}' : '${numbers[j].value} ≥ ${numbers[j + 1].value}'} (already in order)";
           onStateChanged();
 
           await _waitIfPaused();
@@ -305,8 +319,8 @@ class ModifiedBubbleSortLogic {
     swapTo = j + 1;
     swapTick++; // signal a new swap cycle to the AnimatedBubble
     isSwapping = true;
-    currentStep = "Swapping ${numbers[j]} and ${numbers[j + 1]}";
-    operationIndicator = "🔄 Swapping: ${numbers[j]} ↔ ${numbers[j + 1]} (${isAscending ? '${numbers[j]} > ${numbers[j + 1]}' : '${numbers[j]} < ${numbers[j + 1]}'})";
+    currentStep = "Swapping ${numbers[j].value} and ${numbers[j + 1].value}";
+    operationIndicator = "🔄 Swapping: ${numbers[j].value} ↔ ${numbers[j + 1].value} (${isAscending ? '${numbers[j].value} > ${numbers[j + 1].value}' : '${numbers[j].value} < ${numbers[j + 1].value}'})";
     totalSwaps++;
     currentSwapped = true;
     onStateChanged();
@@ -316,9 +330,9 @@ class ModifiedBubbleSortLogic {
     if (shouldStop) return;
 
     // swap the underlying array (visual will follow)
-    int temp = numbers[j];
+    final tmp = numbers[j];
     numbers[j] = numbers[j + 1];
-    numbers[j + 1] = temp;
+    numbers[j + 1] = tmp;
     onStateChanged();
 
     // reset animation controller and swap state
