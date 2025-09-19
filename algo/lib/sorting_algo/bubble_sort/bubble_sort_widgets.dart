@@ -45,7 +45,7 @@ class BubbleSortWidgets {
             ],
           ),
           if (logic.isSorting || logic.isSorted) ...[
-            const SizedBox(height: 8),
+            // const SizedBox(height: 8),
             MetricsPanel(
               metrics: [
                 MetricItem(label: 'Pass', value: logic.currentI >= 0 ? logic.currentI + 1 : '-', color: Colors.blue),
@@ -57,7 +57,7 @@ class BubbleSortWidgets {
               title: 'Metrics',
               height: 48,
             ),
-            const SizedBox(height: 8),
+            // const SizedBox(height: 8),
           ],
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
@@ -65,7 +65,7 @@ class BubbleSortWidgets {
               const double bubbleWidth = 40;
               const double spacing = 8;
               final int count = logic.numbers.length;
-              final double totalWidth =  count * bubbleWidth + (count - 1) * spacing ;
+              final double totalWidth =  count * bubbleWidth + (count - 1) * spacing + 10 ;
               final double screenWidth = MediaQuery.of(context).size.width;
               final double contentWidth = totalWidth < screenWidth ? screenWidth : totalWidth;
 
@@ -147,7 +147,7 @@ class BubbleSortWidgets {
       CodeLine(line: 1, text: 'for (int i = $iValue; i < $nValue - 1; i++) {', indent: 1),
       CodeLine(line: 2, text: '  for (int j = $jValue; j < $nValue - $iValue - 1; j++) {', indent: 2),
       CodeLine(line: 3, text: '    if ($arrJ $compareOp $arrJplus1) {', indent: 3),
-      CodeLine(line: 4, text: '      swap(arr[j], arr[j + 1]);', indent: 4),
+      CodeLine(line: 4, text: '      swap(arr[j] ($arrJ), arr[j + 1] ($arrJplus1));', indent: 4),
       CodeLine(line: 5, text: '    }', indent: 3),
       CodeLine(line: 6, text: '  }', indent: 2),
       CodeLine(line: 7, text: '}', indent: 1),

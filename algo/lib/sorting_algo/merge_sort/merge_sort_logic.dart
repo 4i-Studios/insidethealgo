@@ -24,20 +24,24 @@ class MergeSortLogic {
     _mergeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    // Initialize arrays with default items
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        movingFromIndex = -1;
+        movingToIndex = -1;
+        movingValue = null;
+        onStateChanged();
+      }
+    });
     numbers = _makeItemsFromInts(_defaultNumbers);
     originalNumbers = List.from(numbers);
     _resetState();
   }
 
-  // State variables
   final List<int> _defaultNumbers = const [64, 34, 25, 12, 22, 11, 90, 88, 76, 50];
 
-  // Use SortItem to keep identity across moves
   late List<SortItem> numbers;
   late List<SortItem> originalNumbers;
 
-  // Merge sort specific state
   List<SortItem> leftArray = [];
   List<SortItem> rightArray = [];
   List<SortItem> mergedArray = [];
@@ -46,6 +50,10 @@ class MergeSortLogic {
   int mergeIndex = -1;
   bool isMerging = false;
   bool isDividing = false;
+
+  int activeRangeLeft = -1;
+  int activeRangeRight = -1;
+  int activeRangeLevel = -1;
 
   String currentStep = "Ready to start sorting";
   String operationIndicator = "";
@@ -61,12 +69,19 @@ class MergeSortLogic {
   int highlightedLine = -1;
   bool isSpeedControlExpanded = false;
 
-  // Animation mode cycling
   AnimationMode _animationMode = AnimationMode.tree;
   AnimationMode get animationMode => _animationMode;
 
-  // Tree structure for visualization
   List<TreeLevel> treeLevels = [];
+  final Set<String> visitedRanges = <String>{};
+  final Set<String> dividingRanges = <String>{};
+  final Set<String> mergingRanges = <String>{};
+  final Set<String> completedRanges = <String>{};
+  int movingFromIndex = -1;
+  int movingToIndex = -1;
+  int? movingValue;
+  int mergeLeftStart = -1;
+  int mergeRightStart = -1;
 
   late AnimationController _animationController;
   late Animation<double> _mergeAnimation;
@@ -74,7 +89,6 @@ class MergeSortLogic {
   final TextEditingController inputController = TextEditingController();
   String? inputError;
 
-  // Getters
   Animation<double> get mergeAnimation => _mergeAnimation;
 
   void dispose() {
@@ -82,7 +96,6 @@ class MergeSortLogic {
     inputController.dispose();
   }
 
-  // Helper to create SortItem list
   List<SortItem> _makeItemsFromInts(List<int> list) {
     int id = 0;
     return list.map((v) => SortItem(id++, v)).toList();
@@ -179,6 +192,10 @@ class MergeSortLogic {
     totalComparisons = 0;
     totalMerges = 0;
     treeLevels = [];
+    visitedRanges.clear();
+    dividingRanges.clear();
+    mergingRanges.clear();
+    completedRanges.clear();
   }
 
   void stopSorting() {
@@ -253,10 +270,8 @@ class MergeSortLogic {
 
     onStateChanged();
 
-    // Build initial tree structure
     _buildInitialTreeStructure();
 
-    // Perform merge sort
     List<SortItem> sortedArray = List.from(numbers);
     await _mergeSort(sortedArray, 0, numbers.length - 1);
 
@@ -278,16 +293,24 @@ class MergeSortLogic {
   }
 
   void _addTreeLevel(List<SortItem> items) {
-    if (treeLevels.length > 4) return; // Limit depth
+    if (treeLevels.length > 4) return;
     treeLevels.add(TreeLevel(items: [...items], level: treeLevels.length));
+    onStateChanged();
   }
 
-  Future<void> _mergeSort(List<SortItem> arr, int left, int right) async {
+  Future<void> _mergeSort(List<SortItem> arr, int left, int right, [int level = 0]) async {
     if (shouldStop) return;
     await _waitIfPaused();
 
     if (left < right) {
-      // Divide step
+      activeRangeLeft = left;
+      activeRangeRight = right;
+      activeRangeLevel = level;
+
+      final String rangeKey = '$left-$right';
+      visitedRanges.add(rangeKey);
+      dividingRanges.add(rangeKey);
+
       isDividing = true;
       int mid = left + (right - left) ~/ 2;
 
@@ -298,26 +321,40 @@ class MergeSortLogic {
       onStateChanged();
       await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
 
-      // Recursively sort both halves
-      await _mergeSort(arr, left, mid);
+      dividingRanges.remove(rangeKey);
+      onStateChanged();
+
+      await _mergeSort(arr, left, mid, level + 1);
       if (shouldStop) return;
 
-      await _mergeSort(arr, mid + 1, right);
+      await _mergeSort(arr, mid + 1, right, level + 1);
       if (shouldStop) return;
 
-      // Merge step
-      await _merge(arr, left, mid, right);
+      await _merge(arr, left, mid, right, level);
+
+      completedRanges.add(rangeKey);
+
+      activeRangeLeft = -1;
+      activeRangeRight = -1;
+      activeRangeLevel = -1;
+      onStateChanged();
     }
   }
 
-  Future<void> _merge(List<SortItem> arr, int left, int mid, int right) async {
+  Future<void> _merge(List<SortItem> arr, int left, int mid, int right, [int level = 0]) async {
     if (shouldStop) return;
     await _waitIfPaused();
+
+    final String rangeKey = '$left-$right';
+    mergingRanges.add(rangeKey);
+
+    activeRangeLeft = left;
+    activeRangeRight = right;
+    activeRangeLevel = level;
 
     isMerging = true;
     isDividing = false;
 
-    // Create temporary arrays
     List<SortItem> leftArr = [];
     List<SortItem> rightArr = [];
 
@@ -327,6 +364,9 @@ class MergeSortLogic {
     for (int i = mid + 1; i <= right; i++) {
       rightArr.add(SortItem(arr[i].id, arr[i].value));
     }
+
+    mergeLeftStart = left;
+    mergeRightStart = mid + 1;
 
     leftArray = leftArr;
     rightArray = rightArr;
@@ -357,11 +397,19 @@ class MergeSortLogic {
         currentStep = "Taking ${leftArr[i].value} from left array";
         operationIndicator = "📥 ${leftArr[i].value} → position $k";
         arr[k] = SortItem(leftArr[i].id, leftArr[i].value);
+        movingFromIndex = mergeLeftStart + i;
+        movingToIndex = k;
+        movingValue = leftArr[i].value;
+        _animationController.forward(from: 0.0);
         i++;
       } else {
         currentStep = "Taking ${rightArr[j].value} from right array";
         operationIndicator = "📥 ${rightArr[j].value} → position $k";
         arr[k] = SortItem(rightArr[j].id, rightArr[j].value);
+        movingFromIndex = mergeRightStart + j;
+        movingToIndex = k;
+        movingValue = rightArr[j].value;
+        _animationController.forward(from: 0.0);
         j++;
       }
 
@@ -371,12 +419,15 @@ class MergeSortLogic {
       await Future.delayed(Duration(milliseconds: (600 / speed).round()));
     }
 
-    // Copy remaining elements
     while (i < leftArr.length) {
       if (shouldStop) return;
       await _waitIfPaused();
 
       arr[k] = SortItem(leftArr[i].id, leftArr[i].value);
+      movingFromIndex = mergeLeftStart + i;
+      movingToIndex = k;
+      movingValue = leftArr[i].value;
+      _animationController.forward(from: 0.0);
       currentStep = "Copying remaining element ${leftArr[i].value}";
       operationIndicator = "📥 ${leftArr[i].value} → position $k";
       i++;
@@ -390,6 +441,10 @@ class MergeSortLogic {
       await _waitIfPaused();
 
       arr[k] = SortItem(rightArr[j].id, rightArr[j].value);
+      movingFromIndex = mergeRightStart + j;
+      movingToIndex = k;
+      movingValue = rightArr[j].value;
+      _animationController.forward(from: 0.0);
       currentStep = "Copying remaining element ${rightArr[j].value}";
       operationIndicator = "📥 ${rightArr[j].value} → position $k";
       j++;
@@ -406,11 +461,18 @@ class MergeSortLogic {
     leftArray = [];
     rightArray = [];
 
+    mergingRanges.remove(rangeKey);
+
     currentStep = "Merge complete for range [$left-$right]";
     operationIndicator = "✅ Subarray merged successfully";
 
     onStateChanged();
     await Future.delayed(Duration(milliseconds: (500 / speed).round()));
+
+    activeRangeLeft = -1;
+    activeRangeRight = -1;
+    activeRangeLevel = -1;
+    onStateChanged();
   }
 }
 

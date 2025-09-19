@@ -51,57 +51,51 @@ class _InsertionSortPageState extends State<InsertionSortPage>
         ],
       ),
 
-                  body: AlgorithmLayout(
-                    inputSection: HideableInputSection(
-                      child: _widgets.buildInputSection(context),
-                      hide: _logic.isSorting,
-                    ),
-                    animationArea: Expanded(
-                      flex: 3,
-                      child: _widgets.buildAnimationArea(context),
-                    ),
-                    statusDisplay: _widgets.buildStatusDisplay(context),
-                    codeDisplay: Flexible(
-                      flex: 6,
-                      child: _widgets.buildCodeAndControlsArea(context),
-                    ),
-                    floatingActionButton: ExpandableActionFab(
-                      speed: _logic.speed,
-                      onSpeedChanged: _logic.updateSpeed,
-                      isExpanded: _logic.isSpeedControlExpanded,
-                      onTap: () => _logic.toggleSpeedControl(),
-                      actionButtons: [
-                        ActionButton(
-                          onPressed: _logic.onPlayPausePressed,
-                          icon: _logic.isSorting
-                              ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
-                              : Icons.play_arrow,
-                          label: _logic.isSorting
-                              ? (_logic.isPaused ? 'Play' : 'Pause')
-                              : 'Start',
-                          color: Colors.green,
-                        ),
-                        ActionButton(
-                          onPressed: _logic.isSorting ? _logic.stopSorting : null,
-                          icon: Icons.stop,
-                          label: 'Stop',
-                          color: Colors.red,
-                        ),
-                        ActionButton(
-                          onPressed: !_logic.isSorting ? _logic.resetArray : null,
-                          icon: Icons.refresh,
-                          label: 'Reset',
-                          color: Colors.orange,
-                        ),
-                        ActionButton(
-                          onPressed: !_logic.isSorting ? _logic.shuffleArray : null,
-                          icon: Icons.shuffle,
-                          label: 'Shuffle',
-                          color: Colors.purple,
-                        ),
-                      ],
-                    ),
-                  ),
+      body: AlgorithmLayout(
+        inputSection: HideableInputSection(
+          child: _widgets.buildInputSection(context),
+          hide: _logic.isSorting,
+        ),
+        animationArea: _widgets.buildAnimationArea(context),
+        statusDisplay: _widgets.buildStatusDisplay(context),
+        codeDisplay: _widgets.buildCodeAndControlsArea(context),
+        floatingActionButton: ExpandableActionFab(
+          speed: _logic.speed,
+          onSpeedChanged: _logic.updateSpeed,
+          isExpanded: _logic.isSpeedControlExpanded,
+          onTap: () => _logic.toggleSpeedControl(),
+          actionButtons: [
+            ActionButton(
+              onPressed: _logic.onPlayPausePressed,
+              icon: _logic.isSorting
+                  ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
+                  : Icons.play_arrow,
+              label: _logic.isSorting
+                  ? (_logic.isPaused ? 'Play' : 'Pause')
+                  : 'Start',
+              color: Colors.green,
+            ),
+            ActionButton(
+              onPressed: _logic.isSorting ? _logic.stopSorting : null,
+              icon: Icons.stop,
+              label: 'Stop',
+              color: Colors.red,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSorting ? _logic.resetArray : null,
+              icon: Icons.refresh,
+              label: 'Reset',
+              color: Colors.orange,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSorting ? _logic.shuffleArray : null,
+              icon: Icons.shuffle,
+              label: 'Shuffle',
+              color: Colors.purple,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -23,7 +23,7 @@ class SelectionSortWidgets {
   Widget buildAnimationArea(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -35,7 +35,7 @@ class SelectionSortWidgets {
         children: [
           _buildColorLegend(),
           if (logic.isSorting || logic.isSorted) ...[
-            const SizedBox(height: 8),
+            // const SizedBox(height: 8),
             MetricsPanel(
               metrics: [
                 MetricItem(label: 'Pass', value: logic.currentI >= 0 ? logic.currentI + 1 : '-', color: Colors.blue),
@@ -47,7 +47,7 @@ class SelectionSortWidgets {
               title: 'Metrics',
               height: 48,
             ),
-            const SizedBox(height: 8),
+            // const SizedBox(height: 8),
           ],
           Expanded(
             child: Center(

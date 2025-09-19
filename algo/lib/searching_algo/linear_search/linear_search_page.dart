@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/algorithm_app_bar.dart';
+import '../../widgets/algorithm_layout.dart';
 import '../../widgets/expandable_action_fab.dart';
 import 'linear_search_logic.dart';
 import 'linear_search_widgets.dart';
@@ -49,69 +50,47 @@ class _LinearSearchPageState extends State<LinearSearchPage>
           ),
         ],
       ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Column(
-            children: [
-              // Input section
-              _widgets.buildInputSection(context),
-
-              // Animation area
-              Expanded(
-                flex: 4,
-                child: _widgets.buildAnimationArea(context),
-              ),
-
-              // Status display
-              _widgets.buildStatusDisplay(context),
-
-              // Code and controls area
-              Flexible(
-                flex: 6,
-                child: _widgets.buildCodeAndControlsArea(context),
-              ),
-            ],
-          ),
-
-          // Floating action button
-          ExpandableActionFab(
-            speed: _logic.speed,
-            onSpeedChanged: _logic.updateSpeed,
-            isExpanded: _logic.isSpeedControlExpanded,
-            onTap: () => _logic.toggleSpeedControl(),
-            actionButtons: [
-              ActionButton(
-                onPressed: _logic.onPlayPausePressed,
-                icon: _logic.isSearching
-                    ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
-                    : Icons.play_arrow,
-                label: _logic.isSearching
-                    ? (_logic.isPaused ? 'Play' : 'Pause')
-                    : 'Start',
-                color: Colors.teal,
-              ),
-              ActionButton(
-                onPressed: _logic.isSearching ? _logic.stopSearching : null,
-                icon: Icons.stop,
-                label: 'Stop',
-                color: Colors.red,
-              ),
-              ActionButton(
-                onPressed: !_logic.isSearching ? _logic.resetArray : null,
-                icon: Icons.refresh,
-                label: 'Reset',
-                color: Colors.orange,
-              ),
-              ActionButton(
-                onPressed: !_logic.isSearching ? _logic.shuffleArray : null,
-                icon: Icons.shuffle,
-                label: 'Shuffle',
-                color: Colors.teal,
-              ),
-            ],
-          ),
-        ],
+      body: AlgorithmLayout(
+        inputSection: _widgets.buildInputSection(context),
+        animationArea: _widgets.buildAnimationArea(context),
+        statusDisplay: _widgets.buildStatusDisplay(context),
+        codeDisplay: _widgets.buildCodeAndControlsArea(context),
+        floatingActionButton: ExpandableActionFab(
+          speed: _logic.speed,
+          onSpeedChanged: _logic.updateSpeed,
+          isExpanded: _logic.isSpeedControlExpanded,
+          onTap: () => _logic.toggleSpeedControl(),
+          actionButtons: [
+            ActionButton(
+              onPressed: _logic.onPlayPausePressed,
+              icon: _logic.isSearching
+                  ? (_logic.isPaused ? Icons.play_arrow : Icons.pause)
+                  : Icons.play_arrow,
+              label: _logic.isSearching
+                  ? (_logic.isPaused ? 'Play' : 'Pause')
+                  : 'Start',
+              color: Colors.teal,
+            ),
+            ActionButton(
+              onPressed: _logic.isSearching ? _logic.stopSearching : null,
+              icon: Icons.stop,
+              label: 'Stop',
+              color: Colors.red,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSearching ? _logic.resetArray : null,
+              icon: Icons.refresh,
+              label: 'Reset',
+              color: Colors.orange,
+            ),
+            ActionButton(
+              onPressed: !_logic.isSearching ? _logic.shuffleArray : null,
+              icon: Icons.shuffle,
+              label: 'Shuffle',
+              color: Colors.teal,
+            ),
+          ],
+        ),
       ),
     );
   }

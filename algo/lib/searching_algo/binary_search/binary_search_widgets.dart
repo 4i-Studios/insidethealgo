@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/animated_search_card.dart';
 import '../../widgets/search_animation.dart';
 import '../../widgets/color_legend.dart';
 import '../../widgets/status_chip.dart';
@@ -24,10 +25,80 @@ class BinarySearchWidgets {
   }
 
   Widget buildInputSection(BuildContext context) {
-    return InputSection(
-      controller: logic.arrayController,
-      isDisabled: logic.isSearching,
-      onSetPressed: () => logic.setArrayFromInput(context),
+    return Container(
+      // constraints: const BoxConstraints(maxWidth: 300), // Provide a bounded width
+      child: Row(
+        mainAxisSize: MainAxisSize.min, // Shrink-wrap the row's width
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(
+            fit: FlexFit.loose, // Loose fit to avoid taking all available space
+            child: InputSection(
+              controller: logic.arrayController,
+              isDisabled: logic.isSearching,
+              onSetPressed: () => logic.setArrayFromInput(context),
+            ),
+          ),
+          // const SizedBox(width: 16),
+          Container(
+            color: Colors.blue.shade50,
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Wrapping the TextField with a SizedBox to set a specific width
+                SizedBox(
+                  width: 100,
+                  child: TextField(
+                    controller: logic.targetController,
+                    keyboardType: TextInputType.text,
+                    style: const TextStyle(fontSize: 13),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 10,
+                      ),
+                      hintText: 'Enter Target',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                    ),
+                    onSubmitted: (_) => logic.setTargetFromInput(context),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                SizedBox(
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: logic.isSearching
+                        ? null
+                        : () => logic.setTargetFromInput(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      minimumSize: const Size(0, 36),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    child: const Text('Set', style: TextStyle(fontSize: 13)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -44,7 +115,9 @@ class BinarySearchWidgets {
       ),
       child: Column(
         children: [
+      if (!logic.searchCompleted) ...[
           _buildSearchInfo(),
+          ],
           ColorLegend(
             items: [
               ColorLegendItem(color: Colors.blue, label: 'Unsearched'),
@@ -60,21 +133,11 @@ class BinarySearchWidgets {
             // const SizedBox(height: 8),
           ],
           Expanded(
-            child: SearchAnimation(
+            child: AnimatedSearchCard(
               numbers: logic.numbers,
-              indices: {
-                'left': logic.leftIndex,
-                'mid': logic.midIndex,
-                'right': logic.rightIndex,
-              },
-              colors: {
-                'default': Colors.blue,
-                'left': Colors.orange,
-                'mid': Colors.purple,
-                'right': Colors.red,
-                'found': Colors.green,
-              },
-              maxBarHeight: 100.0,
+              currentIndex: logic.midIndex,
+              foundIndex: logic.foundIndex,
+              isSearching: logic.isSearching,
             ),
           ),
         ],
@@ -208,8 +271,8 @@ class BinarySearchWidgets {
 
   Widget buildCodeAndControlsArea(BuildContext context) {
     return CodeDisplay(
-      title: 'Binary Search Code:',
-      getTextColor: (line) => logic.highlightedLine == line ? Colors.red : Colors.black,
+      title: 'Binary Search Code',
+      getTextColor: (line) => logic.highlightedLine == line ? Colors.black : Colors.white,
       codeLines: [
         CodeLine(line: 0, text: 'int binarySearch(List<int> arr, int target) {', indent: 0),
         CodeLine(line: 1, text: '  int left = 0, right = arr.length - 1;', indent: 1),

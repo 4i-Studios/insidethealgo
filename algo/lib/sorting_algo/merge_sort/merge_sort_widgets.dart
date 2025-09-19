@@ -1,5 +1,6 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import '../../widgets/animated_bubble.dart';
 import '../../widgets/input_section.dart';
 import '../../widgets/code_display.dart';
 import '../../widgets/metrics_panel.dart';
@@ -9,7 +10,22 @@ import 'merge_sort_logic.dart';
 class MergeSortWidgets {
   final MergeSortLogic logic;
 
+  // Approximate width reserved per leaf node
+  final double leafNodeWidth = 120.0;
+  // Per-level vertical spacing for simple layout + animation positioning
+  final double levelHeight = 110.0;
+
+  // Scroll controllers to allow programmatic focus on a node (x and y)
+  final ScrollController hController = ScrollController();
+  final ScrollController vController = ScrollController();
+
   MergeSortWidgets(this.logic);
+
+  void dispose() {
+    // dispose controllers when the widgets helper is disposed by the page
+    hController.dispose();
+    vController.dispose();
+  }
 
   Widget buildInputSection(BuildContext context) {
     return InputSection(
@@ -33,7 +49,7 @@ class MergeSortWidgets {
       ),
       child: Column(
         children: [
-          _buildAnimationModeHeader(),
+          // _buildAnimationModeHeader(),
           _buildColorLegendRow(),
           if (logic.isSorting || logic.isSorted) ...[
             _buildMetricsRow(context),
@@ -49,53 +65,22 @@ class MergeSortWidgets {
     );
   }
 
-  Widget _buildAnimationModeHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Animation Mode: ${logic.animationModeLabel}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(width: 12),
-          ElevatedButton.icon(
-            onPressed: logic.cycleAnimationMode,
-            icon: Icon(_getAnimationModeIcon()),
-            label: const Text('Switch View'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildAnimationModeHeader() {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 8),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         const Text(
+  //           'Tree View',
+  //           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  IconData _getAnimationModeIcon() {
-    switch (logic.animationMode) {
-      case AnimationMode.tree:
-        return Icons.account_tree;
-      case AnimationMode.bubble:
-        return Icons.bubble_chart;
-      case AnimationMode.bars:
-        return Icons.bar_chart;
-    }
-  }
-
-  Widget _buildCurrentAnimation() {
-    switch (logic.animationMode) {
-      case AnimationMode.tree:
-        return _buildTreeAnimation();
-      case AnimationMode.bubble:
-        return _buildBubbleAnimation();
-      case AnimationMode.bars:
-        return _buildBarAnimation();
-    }
-  }
+  Widget _buildCurrentAnimation() => _buildTreeAnimation();
 
   Widget _buildTreeAnimation() {
     return Container(
@@ -114,9 +99,14 @@ class MergeSortWidgets {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: InteractiveViewer(
+                boundaryMargin: const EdgeInsets.all(200),
+                minScale: 0.5,
+                maxScale: 2.0,
+                // allow the child to be larger than the viewport so scrollbars/controllers can work
+                constrained: false,
                 child: _buildTreeStructure(),
               ),
             ),
@@ -126,150 +116,281 @@ class MergeSortWidgets {
     );
   }
 
-  Widget _buildBubbleAnimation() {
-    return AnimatedBubble(
-      numbers: logic.numbers.map((e) => e.value).toList(),
-      comparingIndex1: logic.leftIndex >= 0 ? logic.leftIndex : -1,
-      comparingIndex2: logic.rightIndex >= 0 ? logic.rightIndex : -1,
-      isSwapping: logic.isMerging,
-      swapFrom: logic.leftIndex,
-      swapTo: logic.mergeIndex,
-      swapProgress: logic.mergeAnimation.value,
-      isSorted: logic.isSorted,
-      swapTick: logic.totalMerges,
-    );
-  }
+  Widget _buildTreeStructure() {
+    if (logic.numbers.isEmpty) return const Center(child: Text('Start sorting to see the tree'));
 
-  Widget _buildBarAnimation() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const Text(
-            'Bar Chart View',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: logic.numbers.asMap().entries.map((entry) {
-                int index = entry.key;
-                SortItem item = entry.value;
+    final int leafCount = logic.numbers.length;
+    final double width = (leafCount * leafNodeWidth).clamp(leafNodeWidth, 5000.0);
 
-                Color barColor = Colors.blue;
-                if (logic.isMerging) {
-                  if (index == logic.leftIndex) {
-                    barColor = Colors.orange;
-                  } else if (index == logic.rightIndex) {
-                    barColor = Colors.purple;
-                  } else if (index == logic.mergeIndex) {
-                    barColor = Colors.red;
-                  }
-                }
-                if (logic.isSorted) {
-                  barColor = Colors.green;
-                }
+    // Calculate maximum depth to reserve a reasonable height for the scrollable area
+    final int maxDepth = (leafCount <= 1) ? 1 : (math.log(leafCount) / math.log(2)).ceil() + 1;
+    final double totalHeight = (maxDepth + 1) * levelHeight + 80;
 
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 30,
-                  height: (item.value / 100) * 200 + 20,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: barColor,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${item.value}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+    // Build tree content inside scroll views so both horizontal and vertical scrolling are possible
+    return LayoutBuilder(builder: (context, constraints) {
+      final double viewportW = constraints.maxWidth.isFinite ? constraints.maxWidth : 600.0;
+      final double viewportH = constraints.maxHeight.isFinite ? constraints.maxHeight : 400.0;
+
+      // Trigger scrolling to the active node after the frame is built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToActiveNodeIfNeeded(width, viewportW, viewportH, maxDepth);
+      });
+
+      return Scrollbar(
+        child: SingleChildScrollView(
+          controller: hController,
+          scrollDirection: Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: vController,
+            scrollDirection: Axis.vertical,
+            child: SizedBox(
+              width: width,
+              height: totalHeight,
+              child: _buildTreeLevel(logic.numbers.map((e) => e.value).toList(), 0, 0, logic.numbers.length - 1, width),
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
-  Widget _buildTreeStructure() {
-    if (logic.numbers.isEmpty) {
-      return const Center(child: Text('Start sorting to see the tree'));
-    }
+  void _scrollToActiveNodeIfNeeded(double contentWidth, double viewportW, double viewportH, int maxDepth) {
+    if (logic.activeRangeLeft < 0 || logic.activeRangeRight < logic.activeRangeLeft) return;
 
-    return _buildTreeLevel(logic.numbers.map((e) => e.value).toList(), 0);
+    // choose center index of active range
+    final double centerIndex = (logic.activeRangeLeft + logic.activeRangeRight) / 2.0;
+
+    final double targetCenterX = centerIndex * leafNodeWidth + leafNodeWidth / 2.0;
+    final double desiredScrollX = (targetCenterX - viewportW / 2.0).clamp(0.0, math.max(0.0, contentWidth - viewportW));
+
+    final double level = (logic.activeRangeLevel >= 0) ? logic.activeRangeLevel.toDouble() : 0.0;
+    final double targetCenterY = (level * levelHeight) + (levelHeight / 2.0);
+    final double contentHeight = (maxDepth + 1) * levelHeight + 80;
+    final double desiredScrollY = (targetCenterY - viewportH / 2.0).clamp(0.0, math.max(0.0, contentHeight - viewportH));
+
+    try {
+      if (hController.hasClients) {
+        hController.animateTo(desiredScrollX, duration: const Duration(milliseconds: 420), curve: Curves.easeInOut);
+      }
+      if (vController.hasClients) {
+        vController.animateTo(desiredScrollY, duration: const Duration(milliseconds: 420), curve: Curves.easeInOut);
+      }
+    } catch (e) {
+      // ignore if controllers are not ready
+    }
   }
 
-  Widget _buildTreeLevel(List<int> array, int level) {
-    if (array.length <= 1 || level > 3) {
-      return _buildTreeNode(array, level, true);
+  Widget _buildTreeLevel(List<int> array, int level, int startIndex, int endIndex, double availableWidth) {
+    // If leaf
+    if (array.length <= 1) {
+      return Align(
+        alignment: Alignment.center,
+        child: SizedBox(width: leafNodeWidth, child: _buildTreeNode(array, level, true, startIndex, endIndex, leafNodeWidth)),
+      );
     }
 
+    // For non-leaf nodes, support progressive expansion based on visitedRanges
+    final String rangeKey = '$startIndex-$endIndex';
     int mid = array.length ~/ 2;
     List<int> left = array.sublist(0, mid);
     List<int> right = array.sublist(mid);
+    int midIndex = startIndex + left.length - 1;
 
-    return Column(
-      children: [
-        _buildTreeNode(array, level, false),
-        if (level < 3) ...[
-          const SizedBox(height: 8),
-          // Connection lines
-          Container(
-            height: 16,
-            child: CustomPaint(
-              painter: TreeLinePainter(),
-              size: const Size(100, 16),
-            ),
-          ),
-          // Child nodes
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(child: _buildTreeLevel(left, level + 1)),
-              Expanded(child: _buildTreeLevel(right, level + 1)),
-            ],
+    final double childWidth = availableWidth / 2;
+
+    final bool isVisited = logic.visitedRanges.contains(rangeKey);
+
+    // Header node always shown
+    final Widget header = Align(
+      alignment: Alignment.center,
+      child: SizedBox(width: availableWidth, child: _buildTreeNode(array, level, false, startIndex, endIndex, availableWidth)),
+    );
+
+    // If not yet visited (divided), show collapsed indicator only
+    if (!isVisited) {
+      return Column(
+        children: [
+          header,
+          const SizedBox(height: 6),
+          SizedBox(width: availableWidth, height: 16, child: CustomPaint(painter: TreeLinePainter())),
+          // Collapsed placeholder to indicate a split will happen
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0, bottom: 6.0),
+            child: Text('… dividing …', style: TextStyle(color: Colors.grey.shade500, fontStyle: FontStyle.italic)),
           ),
         ],
+      );
+    }
+
+    // If visited, animate children appearing (divide animation)
+    return Column(
+      children: [
+        header,
+        const SizedBox(height: 6),
+        SizedBox(width: availableWidth, height: 16, child: CustomPaint(painter: TreeLinePainter())),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 420),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: childWidth,
+                child: AnimatedOpacity(
+                  opacity: 1.0,
+                  duration: const Duration(milliseconds: 420),
+                  child: _buildTreeLevel(left, level + 1, startIndex, midIndex, childWidth),
+                ),
+              ),
+              SizedBox(
+                width: childWidth,
+                child: AnimatedOpacity(
+                  opacity: 1.0,
+                  duration: const Duration(milliseconds: 420),
+                  child: _buildTreeLevel(right, level + 1, midIndex + 1, endIndex, childWidth),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTreeNode(List<int> array, int level, bool isLeaf) {
+  Widget _buildTreeNode(List<int> array, int level, bool isLeaf, int startIndex, int endIndex, double width) {
+    // Determine if this node corresponds to the currently active range
+    bool isActiveExact = (logic.activeRangeLeft == startIndex && logic.activeRangeRight == endIndex);
+    bool isActiveContains = (logic.activeRangeLeft >= startIndex && logic.activeRangeRight <= endIndex && logic.activeRangeLeft != -1);
+
+    final String rangeKey = '$startIndex-$endIndex';
+    bool isDividingNode = logic.dividingRanges.contains(rangeKey);
+    bool isMergingNode = logic.mergingRanges.contains(rangeKey);
+    bool isCompletedNode = logic.completedRanges.contains(rangeKey);
+
     Color nodeColor;
     if (isLeaf) {
+      nodeColor = isCompletedNode ? Colors.green.shade200 : Colors.green.shade100;
+    } else if (isActiveExact && logic.isDividing) {
+      nodeColor = Colors.orange.shade200;
+    } else if (isActiveExact && logic.isMerging) {
+      nodeColor = Colors.purple.shade200;
+    } else if (isCompletedNode) {
       nodeColor = Colors.green.shade100;
-    } else if (logic.isSorting && logic.isDividing) {
-      nodeColor = Colors.orange.shade100;
-    } else if (logic.isSorting && logic.isMerging) {
+    } else if (isMergingNode) {
       nodeColor = Colors.purple.shade100;
+    } else if (isDividingNode) {
+      nodeColor = Colors.orange.shade100;
+    } else if (isActiveContains) {
+      nodeColor = Colors.yellow.shade100;
     } else {
       nodeColor = Colors.blue.shade100;
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    // Animate focus for the active node (slight scale + stronger border/shadow)
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeInOut,
+      width: width,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: nodeColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.shade400),
-      ),
-      child: Text(
-        '[${array.join(',')}]',
-        style: TextStyle(
-          fontSize: (10 - level).clamp(8, 12).toDouble(),
-          fontWeight: FontWeight.w500,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isActiveExact
+            ? Colors.deepPurple.shade400
+            : (isCompletedNode ? Colors.green.shade600 : Colors.grey.shade400),
+          width: (isActiveExact || isCompletedNode) ? 2.0 : 1
         ),
-        overflow: TextOverflow.ellipsis,
+        boxShadow: isActiveExact ? [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0,4))] : [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0,1))],
+      ),
+      child: AnimatedScale(
+        scale: isActiveExact ? 1.06 : 1.0,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header: show whether dividing or merging when active
+            // Use Wrap instead of Row to avoid overflow on narrow screens
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 6,
+              runSpacing: 2,
+              children: [
+                if (isActiveExact && logic.isDividing) ...[
+                  Icon(Icons.call_split, size: 14, color: Colors.orange.shade800),
+                ] else if (isActiveExact && logic.isMerging) ...[
+                  Icon(Icons.merge_type, size: 14, color: Colors.purple.shade800),
+                ] else if (isCompletedNode) ...[
+                  Icon(Icons.check_circle, size: 14, color: Colors.green.shade800),
+                ],
+                Text(
+                  '[$startIndex-${endIndex}]',
+                  style: TextStyle(fontSize: ((11 - (level ~/ 2)).clamp(8, 12)).toDouble(), fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            // Values
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: width - 20),
+              child: Text(
+                '[${array.join(', ')}]',
+                style: TextStyle(
+                  fontSize: (10 - level).clamp(8, 12).toDouble(),
+                  fontWeight: isCompletedNode ? FontWeight.w700 : FontWeight.w500,
+                  color: isCompletedNode ? Colors.green.shade800 : Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Simple animated arrows to suggest movement into parent during merging
+            if (isActiveExact && logic.isMerging) ...[
+              const SizedBox(height: 8),
+              LayoutBuilder(builder: (context, constraints) {
+                final double maxW = constraints.maxWidth.isFinite ? constraints.maxWidth : 200.0;
+                return SizedBox(
+                  height: 18,
+                  width: maxW,
+                  child: AnimatedBuilder(
+                    animation: logic.mergeAnimation,
+                    builder: (context, child) {
+                      final t = logic.mergeAnimation.value;
+                      // Two arrows moving left-to-right with offset
+                      final double span = (maxW - 16).clamp(0.0, maxW);
+                      final double x1 = (t * span);
+                      final double x2 = (((t + 0.5) % 1.0) * span);
+                      return Stack(
+                        children: [
+                          Positioned(left: x1, top: 0, child: Icon(Icons.arrow_forward, size: 14, color: Colors.purple.shade700)),
+                          Positioned(left: x2, top: 0, child: Icon(Icons.arrow_forward, size: 14, color: Colors.orange.shade700)),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              }),
+            ],
+            // Show completion indicator for merged nodes
+            if (isCompletedNode && !isActiveExact) ...[
+              const SizedBox(height: 4),
+              Container(
+                height: 2,
+                width: width * 0.8,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade400,
+                  borderRadius: BorderRadius.circular(1),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -367,7 +488,7 @@ class MergeSortWidgets {
         } else if (text.contains('//')) {
           return Colors.green;
         }
-        return Colors.black87;
+        return Colors.white;
       },
     );
   }

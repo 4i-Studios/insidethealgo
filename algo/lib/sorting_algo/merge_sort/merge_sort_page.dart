@@ -31,6 +31,9 @@ class _MergeSortPageState extends State<MergeSortPage>
   @override
   void dispose() {
     _logic.dispose();
+    try {
+      _widgets.dispose();
+    } catch (_) {}
     super.dispose();
   }
 

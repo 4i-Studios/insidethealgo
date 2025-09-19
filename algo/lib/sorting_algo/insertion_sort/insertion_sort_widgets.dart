@@ -38,7 +38,7 @@ class InsertionSortWidgets {
             // const SizedBox(height: 8),
             _buildMetricsRow(context),
           ],
-          const SizedBox(height: 8),
+          // const SizedBox(height: 8),
           Expanded(
             child: Center(
               child: AnimatedBubble(
