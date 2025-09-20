@@ -180,7 +180,7 @@ class SelectionSortWidgets {
               title: 'SelectionSort',
               codeLines: codeLines,
               highlightedLine: logic.highlightedLine,
-              getTextColor: (text) => Colors.white,
+              getTextColor: CodeDisplay.getDefaultTextColor(),
             ),
           ),
         ],

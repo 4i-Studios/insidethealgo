@@ -184,10 +184,7 @@ class InsertionSortWidgets {
               title: 'InsertionSort',
               codeLines: codeLines,
               highlightedLine: logic.highlightedLine,
-              getTextColor: (text) {
-                if (logic.highlightedLine >= 0 && text.contains('while')) return Colors.yellow.shade200;
-                return Colors.white;
-              },
+              getTextColor: CodeDisplay.getDefaultTextColor(),
             ),
           ),
           const SizedBox(height: 12),

@@ -264,7 +264,7 @@ class LinearSearchLogic {
       operationIndicator = "⏹️ Search was interrupted";
       highlightedLine = -1;
     } else if (isFound) {
-      highlightedLine = 6;
+      highlightedLine = 4;
       currentStep = "";
       operationIndicator = "✅ Success! Found $targetValue at index $foundIndex after $totalComparisons comparisons";
     } else {

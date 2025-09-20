@@ -8,11 +8,17 @@ class SortItem {
 }
 
 enum AnimationMode { tree, bubble, bars }
-
+enum NodeState {
+  unvisited,
+  dividing,
+  merging,
+  completed,
+  merged,
+}
 class MergeSortLogic {
   final VoidCallback onStateChanged;
   final TickerProvider vsync;
-
+  final Map<String, List<int>> mergedNodes = <String, List<int>>{};
   MergeSortLogic({
     required this.onStateChanged,
     required this.vsync,
@@ -454,6 +460,13 @@ class MergeSortLogic {
     }
 
     totalMerges++;
+// Store the merged result for visualization
+List<int> mergedResult = [];
+for (int idx = left; idx <= right; idx++) {
+  mergedResult.add(arr[idx].value);
+}
+mergedNodes[rangeKey] = mergedResult;
+completedRanges.add(rangeKey);
     isMerging = false;
     leftIndex = -1;
     rightIndex = -1;

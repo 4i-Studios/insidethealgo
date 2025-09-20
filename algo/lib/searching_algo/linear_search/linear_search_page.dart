@@ -51,7 +51,10 @@ class _LinearSearchPageState extends State<LinearSearchPage>
         ],
       ),
       body: AlgorithmLayout(
-        inputSection: _widgets.buildInputSection(context),
+        inputSection: HideableInputSection(
+          child: _widgets.buildInputSection(context),
+          hide: _logic.isSearching,
+        ),
         animationArea: _widgets.buildAnimationArea(context),
         statusDisplay: _widgets.buildStatusDisplay(context),
         codeDisplay: _widgets.buildCodeAndControlsArea(context),

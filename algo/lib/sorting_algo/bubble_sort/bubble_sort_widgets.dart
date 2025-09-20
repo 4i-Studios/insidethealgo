@@ -180,7 +180,7 @@ class BubbleSortWidgets {
               title: 'BubbleSort',
               codeLines: codeLines,
               highlightedLine: logic.highlightedLine,
-              getTextColor: (text) => Colors.white,
+              getTextColor: CodeDisplay.getDefaultTextColor(),
             ),
           ),
         ],

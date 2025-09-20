@@ -272,7 +272,8 @@ class BinarySearchWidgets {
   Widget buildCodeAndControlsArea(BuildContext context) {
     return CodeDisplay(
       title: 'Binary Search Code',
-      getTextColor: (line) => logic.highlightedLine == line ? Colors.black : Colors.white,
+      highlightedLine: logic.highlightedLine,
+      getTextColor: CodeDisplay.getDefaultTextColor(),
       codeLines: [
         CodeLine(line: 0, text: 'int binarySearch(List<int> arr, int target) {', indent: 0),
         CodeLine(line: 1, text: '  int left = 0, right = arr.length - 1;', indent: 1),

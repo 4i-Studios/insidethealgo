@@ -341,11 +341,11 @@ class BinarySearchLogic {
       operationIndicator = "⏹️ Search was interrupted";
       highlightedLine = -1;
     } else if (isFound) {
-      highlightedLine = 8;
+      highlightedLine = 5;
       currentStep = "";
       operationIndicator = "✅ Success! Found $targetValue at index $foundIndex in $totalSteps steps ($totalComparisons comparisons)";
     } else {
-      highlightedLine = 9;
+      highlightedLine = 12;
       leftIndex = -1;
       rightIndex = -1;
       midIndex = -1;

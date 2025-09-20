@@ -213,30 +213,25 @@ class LinearSearchWidgets {
     );
   }
 
-  Widget buildCodeAndControlsArea(BuildContext context) {
-    return CodeDisplay(
-      title: 'Linear Search Code',
-      getTextColor: (line) =>
-          logic.highlightedLine == line ? Colors.black : Colors.white,
-      codeLines: [
-        CodeLine(
-          line: 0,
-          text: 'int linearSearch(List<int> arr, int target) {',
-          indent: 0,
-        ),
-        CodeLine(line: 1, text: '  int n = arr.length;', indent: 1),
-        CodeLine(line: 2, text: '  for (int i = 0; i < n; i++) {', indent: 1),
-        CodeLine(line: 3, text: '    if (arr[i] == target) {', indent: 2),
-        CodeLine(
-          line: 4,
-          text: '      return i; // Found at index i',
-          indent: 3,
-        ),
-        CodeLine(line: 5, text: '    }', indent: 2),
-        CodeLine(line: 6, text: '  }', indent: 1),
-        CodeLine(line: 7, text: '  return -1; // Not found', indent: 1),
-        CodeLine(line: 8, text: '}', indent: 0),
-      ],
-    );
-  }
+Widget buildCodeAndControlsArea(BuildContext context) {
+  // Replace placeholders with dynamic values
+  List<CodeLine> dynamicCodeLines = [
+    CodeLine(line: 0, text: 'int linearSearch(List<int> arr, int target) {', indent: 0),
+    CodeLine(line: 1, text: '  int n = ${logic.numbers.length};', indent: 1),
+    CodeLine(line: 2, text: '  for (int i = 0; i < n; i++) {', indent: 1),
+    CodeLine(line: 3, text: '    if (arr[i] == ${logic.targetValue}) {', indent: 2),
+    CodeLine(line: 4, text: '      return i; // Found at index i', indent: 3),
+    CodeLine(line: 5, text: '    }', indent: 2),
+    CodeLine(line: 6, text: '  }', indent: 1),
+    CodeLine(line: 7, text: '  return -1; // Not found', indent: 1),
+    CodeLine(line: 8, text: '}', indent: 0),
+  ];
+
+  return CodeDisplay(
+    title: 'Linear Search Code',
+    highlightedLine: logic.highlightedLine,
+    getTextColor: CodeDisplay.getDefaultTextColor(),
+    codeLines: dynamicCodeLines,
+  );
+}
 }
