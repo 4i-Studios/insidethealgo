@@ -271,10 +271,15 @@ class ModifiedBubbleSortLogic {
             : numbers[j].value < numbers[j + 1].value;
 
         if (shouldSwap) {
-          await _performSwap(j);
+          // mark swapped early so the outer loop knows a swap will happen
+          // even if the swap animation awaits — this prevents a race where
+          // swapped remains false during async pauses and early-exit is missed
           swapped = true;
+          currentSwapped = true;
+          onStateChanged();
+          await _performSwap(j);
         } else {
-          currentStep = "No swap needed - ${isAscending ? '${numbers[j].value} ≤ ${numbers[j + 1].value}' : '${numbers[j].value} ≥ ${numbers[j + 1].value}'}";
+          currentStep = "No swap needed - ${isAscending ? '${numbers[j].value} 6le; ${numbers[j + 1].value}' : '${numbers[j].value} ≥ ${numbers[j + 1].value}'}";
           operationIndicator = "✓ No swap: ${isAscending ? '${numbers[j].value} ≤ ${numbers[j + 1].value}' : '${numbers[j].value} ≥ ${numbers[j + 1].value}'} (already in order)";
           onStateChanged();
 
