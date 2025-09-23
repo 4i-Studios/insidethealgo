@@ -50,19 +50,35 @@ class SelectionSortWidgets {
             // const SizedBox(height: 8),
           ],
           Expanded(
-            child: Center(
-              child: AnimatedBubble(
-                numbers: logic.numbers.map((e) => e.value).toList(),
-                comparingIndex1: logic.comparingIndex,
-                comparingIndex2: logic.minIndex,
-                isSwapping: logic.isSwapping,
-                swapFrom: logic.currentI,
-                swapTo: logic.minIndex,
-                swapProgress: logic.swapAnimation.value,
-                isSorted: logic.isSorted,
-                swapTick: logic.totalSwaps,
-              ),
-            ),
+            child: LayoutBuilder(builder: (context, constraints) {
+              // Estimate content width so we can scroll when bubbles exceed screen width
+              const double bubbleWidth = 40;
+              const double spacing = 8;
+              final int count = logic.numbers.length;
+              final double totalWidth =  count * bubbleWidth + (count - 1) * spacing + 10 ;
+              final double screenWidth = MediaQuery.of(context).size.width;
+              final double contentWidth = totalWidth < screenWidth ? screenWidth : totalWidth;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: contentWidth,
+                  child: Center(
+                    child: AnimatedBubble(
+                      numbers: logic.numbers.map((e) => e.value).toList(),
+                      comparingIndex1: logic.comparingIndex,
+                      comparingIndex2: logic.minIndex,
+                      isSwapping: logic.isSwapping,
+                      swapFrom: logic.currentI,
+                      swapTo: logic.minIndex,
+                      swapProgress: logic.swapAnimation.value,
+                      isSorted: logic.isSorted,
+                      swapTick: logic.totalSwaps,
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),

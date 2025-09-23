@@ -85,16 +85,6 @@ class BubbleSortWidgets {
                       isSorted: logic.isSorted,
                       swapTick: logic.swapTick,
                     )
-                    // : BubbleSortAnimatedStack(
-                    //     numbers: logic.numbers,
-                    //     comparingIndex1: logic.comparingIndex1,
-                    //     comparingIndex2: logic.comparingIndex2,
-                    //     isSwapping: logic.isSwapping,
-                    //     swapFrom: logic.swapFrom,
-                    //     swapTo: logic.swapTo,
-                    //     swapProgress: logic.swapProgress,
-                    //     isSorted: logic.isSorted,
-                    //   ),
                   ),
                 ),
               );

@@ -40,19 +40,35 @@ class InsertionSortWidgets {
           ],
           // const SizedBox(height: 8),
           Expanded(
-            child: Center(
-              child: AnimatedBubble(
-                numbers: logic.numbers.map((e) => e.value).toList(),
-                comparingIndex1: logic.currentJ >= 0 ? logic.currentJ : -1,
-                comparingIndex2: logic.keyIndex >= 0 ? logic.keyIndex : -1,
-                isSwapping: false,
-                swapFrom: -1,
-                swapTo: -1,
-                swapProgress: logic.insertAnimation.value,
-                isSorted: logic.isSorted,
-                swapTick: logic.totalInsertions, // triggers reposition after insert
-              ),
-            ),
+            child: LayoutBuilder(builder: (context, constraints) {
+              // Estimate content width so we can scroll when bubbles exceed screen width
+              const double bubbleWidth = 40;
+              const double spacing = 8;
+              final int count = logic.numbers.length;
+              final double totalWidth =  count * bubbleWidth + (count - 1) * spacing + 10 ;
+              final double screenWidth = MediaQuery.of(context).size.width;
+              final double contentWidth = totalWidth < screenWidth ? screenWidth : totalWidth;
+
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: contentWidth,
+                  child: Center(
+                    child: AnimatedBubble(
+                      numbers: logic.numbers.map((e) => e.value).toList(),
+                      comparingIndex1: logic.currentJ >= 0 ? logic.currentJ : -1,
+                      comparingIndex2: logic.keyIndex >= 0 ? logic.keyIndex : -1,
+                      isSwapping: false,
+                      swapFrom: -1,
+                      swapTo: -1,
+                      swapProgress: logic.insertAnimation.value,
+                      isSorted: logic.isSorted,
+                      swapTick: logic.totalInsertions, // triggers reposition after insert
+                    ),
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
