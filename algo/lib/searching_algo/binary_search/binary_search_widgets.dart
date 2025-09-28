@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../widgets/animated_search_card.dart';
-import '../../widgets/search_animation.dart';
 import '../../widgets/color_legend.dart';
 import '../../widgets/status_chip.dart';
 import '../../widgets/code_display.dart';
@@ -12,18 +11,6 @@ class BinarySearchWidgets {
   final BinarySearchLogic logic;
 
   BinarySearchWidgets(this.logic);
-
-  double _getResponsiveSize(
-    BuildContext context, {
-    required double defaultSize,
-    required double minSize,
-    double? maxSize,
-  }) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double size = (screenWidth / 400) * defaultSize;
-    return size.clamp(minSize, maxSize ?? defaultSize);
-  }
-
   Widget buildInputSection(BuildContext context) {
     return Container(
       // constraints: const BoxConstraints(maxWidth: 300), // Provide a bounded width
@@ -115,17 +102,22 @@ class BinarySearchWidgets {
       ),
       child: Column(
         children: [
-      if (!logic.searchCompleted) ...[
-          _buildSearchInfo(),
-          ],
+          if (!logic.searchCompleted) ...[_buildSearchInfo()],
           ColorLegend(
             items: [
-              ColorLegendItem(color: Colors.blue, label: 'Unsearched'),
-              ColorLegendItem(color: Colors.lightBlue, label: 'Search Range'),
-              ColorLegendItem(color: Colors.orange, label: 'Left (L)'),
-              ColorLegendItem(color: Colors.purple, label: 'Mid (M)'),
-              ColorLegendItem(color: Colors.red, label: 'Right (R)'),
-              ColorLegendItem(color: Colors.green, label: 'Found'),
+              ColorLegendItem(color: Colors.blue.shade100, label: 'Unsearched'),
+              ColorLegendItem(
+                color: Colors.blue.shade200,
+                label: 'Active Range',
+              ),
+              ColorLegendItem(color: Colors.blue.shade600, label: 'Left (L)'),
+              ColorLegendItem(color: Colors.orange.shade400, label: 'Mid (M)'),
+              ColorLegendItem(
+                color: Colors.purple.shade400,
+                label: 'Right (R)',
+              ),
+              ColorLegendItem(color: Colors.grey.shade400, label: 'Discarded'),
+              ColorLegendItem(color: Colors.green.shade500, label: 'Found'),
             ],
           ),
           if (logic.isSearching || logic.searchCompleted) ...[
@@ -138,6 +130,15 @@ class BinarySearchWidgets {
               currentIndex: logic.midIndex,
               foundIndex: logic.foundIndex,
               isSearching: logic.isSearching,
+              searchCompleted: logic.searchCompleted,
+              isFound: logic.isFound,
+              leftIndex: logic.leftIndex >= 0 ? logic.leftIndex : null,
+              rightIndex: logic.rightIndex >= 0 ? logic.rightIndex : null,
+              colorBuilder: logic.getBarColor,
+              labelBuilder: logic.getBarLabel,
+              examinedIndices: logic.examinedIndices,
+              discardedIndices: logic.discardedIndices,
+              focusAnimation: logic.searchAnimation,
             ),
           ),
         ],
@@ -198,19 +199,19 @@ class BinarySearchWidgets {
             StatusChip(
               label: 'Left',
               value: '${logic.leftIndex >= 0 ? logic.leftIndex : '-'}',
-              color: Colors.orange,
+              color: Colors.blue.shade600,
             ),
             const SizedBox(width: 8),
             StatusChip(
               label: 'Mid',
               value: '${logic.midIndex >= 0 ? logic.midIndex : '-'}',
-              color: Colors.purple,
+              color: Colors.orange.shade400,
             ),
             const SizedBox(width: 8),
             StatusChip(
               label: 'Right',
               value: '${logic.rightIndex >= 0 ? logic.rightIndex : '-'}',
-              color: Colors.red,
+              color: Colors.purple.shade400,
             ),
             const SizedBox(width: 8),
             StatusChip(
@@ -275,13 +276,29 @@ class BinarySearchWidgets {
       highlightedLine: logic.highlightedLine,
       getTextColor: CodeDisplay.getDefaultTextColor(),
       codeLines: [
-        CodeLine(line: 0, text: 'int binarySearch(List<int> arr, int target) {', indent: 0),
-        CodeLine(line: 1, text: '  int left = 0, right = arr.length - 1;', indent: 1),
+        CodeLine(
+          line: 0,
+          text: 'int binarySearch(List<int> arr, int target) {',
+          indent: 0,
+        ),
+        CodeLine(
+          line: 1,
+          text: '  int left = 0, right = arr.length - 1;',
+          indent: 1,
+        ),
         CodeLine(line: 2, text: '  while (left <= right) {', indent: 1),
-        CodeLine(line: 3, text: '    int mid = (left + right) ~/ 2;', indent: 2),
+        CodeLine(
+          line: 3,
+          text: '    int mid = (left + right) ~/ 2;',
+          indent: 2,
+        ),
         CodeLine(line: 4, text: '    if (arr[mid] == target) {', indent: 2),
         CodeLine(line: 5, text: '      return mid;', indent: 3),
-        CodeLine(line: 6, text: '    } else if (arr[mid] < target) {', indent: 2),
+        CodeLine(
+          line: 6,
+          text: '    } else if (arr[mid] < target) {',
+          indent: 2,
+        ),
         CodeLine(line: 7, text: '      left = mid + 1;', indent: 3),
         CodeLine(line: 8, text: '    } else {', indent: 2),
         CodeLine(line: 9, text: '      right = mid - 1;', indent: 3),

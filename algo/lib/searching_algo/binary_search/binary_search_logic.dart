@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:collection';
+
+import 'package:flutter/material.dart';
 
 class BinarySearchLogic {
   final VoidCallback onStateChanged;
   final TickerProvider vsync;
 
-  BinarySearchLogic({
-    required this.onStateChanged,
-    required this.vsync,
-  }) {
+  BinarySearchLogic({required this.onStateChanged, required this.vsync}) {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: vsync,
@@ -16,10 +15,22 @@ class BinarySearchLogic {
     _searchAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    _animationController.addListener(onStateChanged);
   }
 
   // State variables
-  final List<int> defaultNumbers = const [11, 12, 22, 25, 34, 50, 64, 76, 88, 90];
+  final List<int> defaultNumbers = const [
+    11,
+    12,
+    22,
+    25,
+    34,
+    50,
+    64,
+    76,
+    88,
+    90,
+  ];
   List<int> numbers = [11, 12, 22, 25, 34, 50, 64, 76, 88, 90];
   List<int> originalNumbers = [11, 12, 22, 25, 34, 50, 64, 76, 88, 90];
 
@@ -51,6 +62,14 @@ class BinarySearchLogic {
   final TextEditingController targetController = TextEditingController();
   String? inputError;
 
+  final Set<int> _examinedIndices = <int>{};
+  final Set<int> _discardedIndices = <int>{};
+
+  UnmodifiableSetView<int> get examinedIndices =>
+      UnmodifiableSetView(_examinedIndices);
+  UnmodifiableSetView<int> get discardedIndices =>
+      UnmodifiableSetView(_discardedIndices);
+
   // Getters
   Animation<double> get searchAnimation => _searchAnimation;
 
@@ -64,6 +83,7 @@ class BinarySearchLogic {
   }
 
   void dispose() {
+    _animationController.removeListener(onStateChanged);
     _animationController.dispose();
     arrayController.dispose();
     targetController.dispose();
@@ -164,10 +184,7 @@ class BinarySearchLogic {
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
   }
 
@@ -187,6 +204,8 @@ class BinarySearchLogic {
     operationIndicator = "";
     totalComparisons = 0;
     totalSteps = 0;
+    _examinedIndices.clear();
+    _discardedIndices.clear();
   }
 
   void stopSearching() {
@@ -199,7 +218,7 @@ class BinarySearchLogic {
   }
 
   void updateSpeed(double newSpeed) {
-    speed = newSpeed;
+    speed = newSpeed.clamp(0.1, 6.0).toDouble();
     onStateChanged();
   }
 
@@ -230,6 +249,11 @@ class BinarySearchLogic {
     }
   }
 
+  Duration _scaledDelay(int baseMilliseconds) {
+    final double effectiveSpeed = speed <= 0 ? 0.1 : speed;
+    return Duration(milliseconds: (baseMilliseconds / effectiveSpeed).round());
+  }
+
   Future<void> startBinarySearch() async {
     if (isSearching || !isArraySorted) return;
 
@@ -241,6 +265,8 @@ class BinarySearchLogic {
     totalSteps = 0;
     operationIndicator = "";
     highlightedLine = 0;
+    _examinedIndices.clear();
+    _discardedIndices.clear();
     onStateChanged();
 
     int n = numbers.length;
@@ -254,32 +280,39 @@ class BinarySearchLogic {
     onStateChanged();
 
     await _waitIfPaused();
-    await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+    await Future.delayed(_scaledDelay(1000));
 
     while (leftIndex <= rightIndex) {
       if (shouldStop) break;
       totalSteps++;
+      final int previousLeft = leftIndex;
+      final int previousRight = rightIndex;
 
       // Calculate mid
       highlightedLine = 2;
       midIndex = (leftIndex + rightIndex) ~/ 2;
-      currentStep = "Step $totalSteps: Calculate mid = ($leftIndex + $rightIndex) ÷ 2 = $midIndex";
-      operationIndicator = "🔢 Mid index: $midIndex, value: ${numbers[midIndex]}";
+      currentStep =
+          "Step $totalSteps: Calculate mid = ($leftIndex + $rightIndex) ÷ 2 = $midIndex";
+      operationIndicator =
+          "🔢 Mid index: $midIndex, value: ${numbers[midIndex]}";
       onStateChanged();
+      _examinedIndices.add(midIndex);
+      _animationController.forward(from: 0.0);
 
       await _waitIfPaused();
-      await Future.delayed(Duration(milliseconds: (1200 / speed).round()));
+      await Future.delayed(_scaledDelay(1200));
       if (shouldStop) break;
 
       // Compare with target
       highlightedLine = 3;
       currentStep = "Comparing: ${numbers[midIndex]} vs $targetValue";
-      operationIndicator = "⚖️ Compare: arr[$midIndex] = ${numbers[midIndex]} vs target = $targetValue";
+      operationIndicator =
+          "⚖️ Compare: arr[$midIndex] = ${numbers[midIndex]} vs target = $targetValue";
       totalComparisons++;
       onStateChanged();
 
       await _waitIfPaused();
-      await Future.delayed(Duration(milliseconds: (1200 / speed).round()));
+      await Future.delayed(_scaledDelay(1200));
       if (shouldStop) break;
 
       if (numbers[midIndex] == targetValue) {
@@ -288,32 +321,37 @@ class BinarySearchLogic {
         foundIndex = midIndex;
         isFound = true;
         currentStep = "Target found at index $midIndex!";
-        operationIndicator = "🎉 Success! Found $targetValue at position $midIndex";
+        operationIndicator =
+            "🎉 Success! Found $targetValue at position $midIndex";
         onStateChanged();
 
         await _waitIfPaused();
-        await Future.delayed(Duration(milliseconds: (1500 / speed).round()));
+        await Future.delayed(_scaledDelay(1500));
         break;
       } else if (numbers[midIndex] < targetValue) {
         // Search right half
         highlightedLine = 5;
+        _markDiscardedRange(previousLeft, midIndex);
         leftIndex = midIndex + 1;
         currentStep = "${numbers[midIndex]} < $targetValue, search right half";
-        operationIndicator = "➡️ Target is larger, search right: left = ${leftIndex}";
+        operationIndicator =
+            "➡️ Target is larger, search right: left = ${leftIndex}";
         onStateChanged();
 
         await _waitIfPaused();
-        await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+        await Future.delayed(_scaledDelay(1000));
       } else {
         // Search left half
         highlightedLine = 6;
+        _markDiscardedRange(midIndex, previousRight);
         rightIndex = midIndex - 1;
         currentStep = "${numbers[midIndex]} > $targetValue, search left half";
-        operationIndicator = "⬅️ Target is smaller, search left: right = ${rightIndex}";
+        operationIndicator =
+            "⬅️ Target is smaller, search left: right = ${rightIndex}";
         onStateChanged();
 
         await _waitIfPaused();
-        await Future.delayed(Duration(milliseconds: (1000 / speed).round()));
+        await Future.delayed(_scaledDelay(1000));
       }
 
       if (shouldStop) break;
@@ -321,11 +359,12 @@ class BinarySearchLogic {
       // Show updated range
       if (leftIndex <= rightIndex) {
         currentStep = "New search range: [$leftIndex, $rightIndex]";
-        operationIndicator = "🔍 Narrowed search range to indices $leftIndex-$rightIndex";
+        operationIndicator =
+            "🔍 Narrowed search range to indices $leftIndex-$rightIndex";
         onStateChanged();
 
         await _waitIfPaused();
-        await Future.delayed(Duration(milliseconds: (800 / speed).round()));
+        await Future.delayed(_scaledDelay(800));
       }
     }
 
@@ -343,16 +382,28 @@ class BinarySearchLogic {
     } else if (isFound) {
       highlightedLine = 5;
       currentStep = "";
-      operationIndicator = "✅ Success! Found $targetValue at index $foundIndex in $totalSteps steps ($totalComparisons comparisons)";
+      operationIndicator =
+          "✅ Success! Found $targetValue at index $foundIndex in $totalSteps steps ($totalComparisons comparisons)";
     } else {
       highlightedLine = 12;
       leftIndex = -1;
       rightIndex = -1;
       midIndex = -1;
+      _markDiscardedRange(0, numbers.length - 1);
       currentStep = "";
-      operationIndicator = "❌ Target $targetValue not found after $totalSteps steps ($totalComparisons comparisons)";
+      operationIndicator =
+          "❌ Target $targetValue not found after $totalSteps steps ($totalComparisons comparisons)";
     }
     onStateChanged();
+  }
+
+  void _markDiscardedRange(int start, int end) {
+    if (start > end) return;
+    for (int i = start; i <= end; i++) {
+      if (i >= 0 && i < numbers.length) {
+        _discardedIndices.add(i);
+      }
+    }
   }
 
   Color getBarColor(int index) {
@@ -362,9 +413,16 @@ class BinarySearchLogic {
     if (midIndex == index && isSearching) {
       return Colors.orange;
     }
-    if (isSearching && index >= leftIndex && index <= rightIndex) {
-      if (index == leftIndex) return Colors.blue;
-      if (index == rightIndex) return Colors.purple;
+    if (_discardedIndices.contains(index)) {
+      return Colors.grey.shade400;
+    }
+    if (isSearching &&
+        leftIndex >= 0 &&
+        rightIndex >= 0 &&
+        index >= leftIndex &&
+        index <= rightIndex) {
+      if (index == leftIndex) return Colors.blue.shade600;
+      if (index == rightIndex) return Colors.purple.shade400;
       return Colors.blue.shade200;
     }
     if (searchCompleted && !isFound) {
@@ -374,6 +432,7 @@ class BinarySearchLogic {
   }
 
   String getBarLabel(int index) {
+    if (isFound && index == foundIndex) return '✓';
     if (index == leftIndex && isSearching) return 'L';
     if (index == rightIndex && isSearching) return 'R';
     if (index == midIndex && isSearching) return 'M';
