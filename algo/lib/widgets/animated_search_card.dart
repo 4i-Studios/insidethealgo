@@ -33,9 +33,9 @@ class AnimatedSearchCard extends StatelessWidget {
     this.examinedIndices,
     this.discardedIndices,
     this.focusAnimation,
-    this.itemExtent = 52,
+    this.itemExtent = 50,
     this.showIndexLabels = true,
-    this.itemPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+    this.itemPadding = const EdgeInsets.symmetric(horizontal: 1, vertical: 2),
   });
 
   @override
@@ -51,84 +51,103 @@ class AnimatedSearchCard extends StatelessWidget {
 
     final pulse = _focusPulse;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: numbers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final value = entry.value;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double effectiveExtent = constraints.maxHeight < 70
+            ? 25
+            : constraints.maxHeight < 95
+                ? 35
+                : itemExtent;
+        final bool effectiveShowLabels =
+            constraints.maxHeight > 85 && showIndexLabels;
 
-          final Color tileColor = _resolveColor(index);
-          final String label = labelBuilder?.call(index) ?? '';
-          final bool hasLabel = label.isNotEmpty;
-          final bool isCurrent = isSearching && index == currentIndex;
-          final bool isFoundTile = isFound && index == foundIndex;
-          final bool isExamined = examinedIndices?.contains(index) ?? false;
-          final bool isDiscarded = discardedIndices?.contains(index) ?? false;
-          final bool outsideRange = _isOutsideCurrentRange(index);
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          // padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: numbers.asMap().entries.map((entry) {
+              final index = entry.key;
+              final value = entry.value;
 
-          final double baseScale = isFoundTile
-              ? 1.08
-              : (isCurrent ? 1.04 : 1.0);
-          final double animatedScale =
-              baseScale + (isCurrent ? 0.06 * pulse() : 0.0);
-          final bool shouldDim =
-              (isDiscarded ||
-              outsideRange ||
-              (searchCompleted && !isFound && !isSearching));
-          final double opacity = shouldDim && !isFoundTile ? 0.35 : 1.0;
+              final Color tileColor = _resolveColor(index);
+              final String label = labelBuilder?.call(index) ?? '';
+              final bool hasLabel = label.isNotEmpty;
+              final bool isCurrent = isSearching && index == currentIndex;
+              final bool isFoundTile = isFound && index == foundIndex;
+              final bool isExamined = examinedIndices?.contains(index) ?? false;
+              final bool isDiscarded = discardedIndices?.contains(index) ?? false;
+              final bool outsideRange = _isOutsideCurrentRange(index);
 
-          return Padding(
-            padding: itemPadding,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  child: hasLabel
-                      ? _PointerBadge(
-                          key: ValueKey('$index-$label'),
-                          label: label,
-                          color: _resolvePointerColor(label, tileColor),
-                        )
-                      : const SizedBox(height: 20),
-                ),
-                const SizedBox(height: 6),
-                AnimatedScale(
-                  scale: animatedScale.clamp(0.9, 1.2),
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeOutBack,
-                  child: AnimatedOpacity(
-                    opacity: opacity,
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOut,
-                    child: _ValueTile(
-                      value: value,
-                      color: tileColor,
-                      extent: itemExtent,
-                      highlightExamined:
-                          isExamined && !isCurrent && !isFoundTile,
-                      isFound: isFoundTile,
+              final double baseScale = isFoundTile
+                  ? 1.05
+                  : (isCurrent ? 1.02 : 1.0);
+              final double animatedScale =
+                  baseScale + (isCurrent ? 0.04 * pulse() : 0.0);
+              final bool shouldDim =
+                  (isDiscarded ||
+                  outsideRange ||
+                  (searchCompleted && !isFound && !isSearching));
+              final double opacity = shouldDim && !isFoundTile ? 0.35 : 1.0;
+
+              return Padding(
+                padding: itemPadding,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 12,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        child: hasLabel
+                            ? _PointerBadge(
+                                key: ValueKey('$index-$label'),
+                                label: label,
+                                color: _resolvePointerColor(label, tileColor),
+                              )
+                            : const SizedBox(),
+                      ),
                     ),
-                  ),
-                ),
-                if (showIndexLabels) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    'idx $index',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blueGrey.shade600,
+                    const SizedBox(height: 2),
+                    AnimatedScale(
+                      scale: animatedScale.clamp(0.9, 1.05),
+                      duration: const Duration(milliseconds: 240),
+                      curve: Curves.easeOutBack,
+                      child: SizedBox(
+                        height: effectiveExtent * 1.05,
+                        width: effectiveExtent * 1.05,
+                        child: AnimatedOpacity(
+                          opacity: opacity,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOut,
+                          child: _ValueTile(
+                            value: value,
+                            color: tileColor,
+                            extent: effectiveExtent,
+                            highlightExamined:
+                                isExamined && !isCurrent && !isFoundTile,
+                            isFound: isFoundTile,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ],
-            ),
-          );
-        }).toList(),
-      ),
+                    if (effectiveShowLabels) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'idx $index',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blueGrey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
     );
   }
 
@@ -206,11 +225,11 @@ class _ValueTile extends StatelessWidget {
         ? Colors.green.shade900
         : (highlightExamined
               ? Colors.orange.shade300
-              : Colors.black.withOpacity(0.08));
+              : Colors.black.withValues(alpha: 0.08));
     final List<BoxShadow> boxShadow = isFound
         ? [
             BoxShadow(
-              color: Colors.green.withOpacity(0.35),
+              color: Colors.green.withValues(alpha: 0.35),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -218,14 +237,14 @@ class _ValueTile extends StatelessWidget {
         : highlightExamined
         ? [
             BoxShadow(
-              color: Colors.orange.withOpacity(0.22),
+              color: Colors.orange.withValues(alpha: 0.22),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ]
         : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -236,7 +255,7 @@ class _ValueTile extends StatelessWidget {
       height: extent,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(14),
+        // borderRadius: BorderRadius.circular(14),
         border: Border.all(color: borderColor, width: isFound ? 2.2 : 1.2),
         boxShadow: boxShadow,
       ),
@@ -272,9 +291,9 @@ class _PointerBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.16),
+        color: color.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color, width: 1.5),
       ),

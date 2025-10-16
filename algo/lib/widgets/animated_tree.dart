@@ -124,7 +124,7 @@ import "../sorting_algo/merge_sort/merge_sort_logic.dart";
             boxShadow: isHighlighted
                 ? [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withValues(alpha: 0.3),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),
@@ -239,7 +239,7 @@ import "../sorting_algo/merge_sort/merge_sort_logic.dart";
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.8), width: 1.5),
+            border: Border.all(color: color.withValues(alpha: 0.8), width: 1.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

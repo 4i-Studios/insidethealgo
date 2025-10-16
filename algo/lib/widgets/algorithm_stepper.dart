@@ -57,7 +57,7 @@ class AlgorithmStepper extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: getStepColor().withOpacity(0.1),
+        color: getStepColor().withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: getStepColor()),
       ),

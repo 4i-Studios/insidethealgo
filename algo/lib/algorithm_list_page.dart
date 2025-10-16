@@ -4,6 +4,7 @@ import 'sorting_algo/mod_bubble_sort/modified_bubble_sort.dart';
 import 'sorting_algo/selection_sort/selection_sort_page.dart';
 import 'sorting_algo/insertion_sort/insertion_sort_page.dart';
 import 'sorting_algo/merge_sort/merge_sort_page.dart';
+import 'sorting_algo/counting_sort/counting_sort_page.dart';
 import 'searching_algo/linear_search/linear_search_page.dart';
 import 'searching_algo/binary_search/binary_search_page.dart';
 
@@ -49,6 +50,12 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
         'page': const MergeSortPage(),
         'icon': Icons.merge_type,
       },
+      {
+        'name': 'Counting Sort',
+        'description': 'Non-comparison sort using frequency counting',
+        'page': const CountingSortPage(),
+        'icon': Icons.numbers,
+      },
       // {
       //   'name': 'Quick Sort',
       //   'description': 'Fast, in-place, divide and conquer',
@@ -65,7 +72,8 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
       },
       {
         'name': 'Binary Search',
-        'description': 'Efficient search on sorted arrays using divide and conquer',
+        'description':
+            'Efficient search on sorted arrays using divide and conquer',
         'page': const BinarySearchPage(),
         'icon': Icons.speed,
       },
@@ -95,9 +103,7 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
       body: Column(
         children: [
           _buildCategorySelector(),
-          Expanded(
-            child: _buildAlgorithmList(),
-          ),
+          Expanded(child: _buildAlgorithmList()),
         ],
       ),
     );
@@ -126,9 +132,12 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: selectedCategory,
+            initialValue: selectedCategory,
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.blue.shade300),
@@ -192,11 +201,7 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.code_off,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.code_off, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'No algorithms found',
@@ -209,10 +214,7 @@ class _AlgorithmListPageState extends State<AlgorithmListPage> {
             const SizedBox(height: 8),
             Text(
               'Select a different category or add new algorithms',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
             ),
           ],
         ),

@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 
-class CodeLine {
-  final int line;
-  final String text;
-  final int indent;
+import '../components/algorithm_state.dart';
 
-  const CodeLine({
-    required this.line,
-    required this.text,
-    required this.indent,
-  });
-}
+// Re-export CodeLine from algorithm_state.dart for backward compatibility
+export '../components/algorithm_state.dart' show CodeLine;
 
 class CodeDisplay extends StatelessWidget {
   final String title;
